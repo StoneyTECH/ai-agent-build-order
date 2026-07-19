@@ -1,27 +1,28 @@
 # build-order
 
-> **Start with [CROSSWALK.md](CROSSWALK.md).** This repo is a principal architect's *reference architecture* for agent assurance: the eight-gate Build Order laid in dependency order, and for each gate, the [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) risk it closes, the determinism rung it lives on, and the **mature tool** that enforces it. For real detection, adopt those tools ([Snyk agent-scan](https://github.com/snyk/agent-scan), [agent-audit](https://github.com/HeadyZhang/agent-audit), AgentAuditKit) — this maps you to them and sequences their adoption. The audit CLI below is a teaching self-check, not a competitor to them.
+> **Start with [CROSSWALK.md](CROSSWALK.md).** This repo is a principal architect's *reference architecture* for agent assurance: the nine-gate Build Order laid in dependency order, and for each gate, the [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) risk it closes, the determinism rung it lives on, and the **mature tool** that enforces it. For real detection, adopt those tools ([Snyk agent-scan](https://github.com/snyk/agent-scan), [agent-audit](https://github.com/HeadyZhang/agent-audit), AgentAuditKit) — this maps you to them and sequences their adoption. The audit CLI below is a teaching self-check, not a competitor to them.
 
-**Audit an AI agent build against the eight-gate Build Order.** Static where it can detect, attested where it can't, and every gate labeled which — so a self-report is never rendered as proof.
+**Audit an AI agent build against the nine-gate Build Order.** Static where it can detect, attested where it can't, and every gate labeled which — so a self-report is never rendered as proof.
 
-This is the proof-of-work companion to the essay [*Everything Gets Rebuilt*](https://stoneytech.net/learn/2026-07-18-everything-gets-rebuilt). The essay ends with eight steps, in the order the rails get laid. This repo turns those steps into a check an agent can run against its own build before it is granted authority. The essay is the demo; this is the receipt.
+This is the proof-of-work companion to the essay [*Everything Gets Rebuilt*](https://stoneytech.net/learn/2026-07-18-everything-gets-rebuilt). The essay ends with nine steps, in the order the rails get laid. This repo turns those steps into a check an agent can run against its own build before it is granted authority. The essay is the demo; this is the receipt.
 
 ```
 npx build-order audit ./my-agent
 ```
 
-## The eight gates
+## The nine gates
 
 | # | Gate | The question it asks |
 |---|------|----------------------|
-| 1 | Name the operator | Does every action trace to an identity, or is a static key doing the work? |
-| 2 | Draw the scope | Is there an allowlist and deny-by-default, or a wildcard grant? |
-| 3 | Classify the evidence | Is retrieved context validated, or does it flow straight into the prompt? |
-| 4 | Type the tools | Do tools enforce typed inputs at the seam, or take free-form blobs? |
-| 5 | Define done, keep the receipt | Is there an audit trail, or just the word "done"? |
-| 6 | Gate the never-states | Is the never-state a hard stop in code, or a warning in the prompt? |
-| 7 | Turn failures into fixtures | Do failures become regression cases, or vanish? |
-| 8 | Build the way home | Are there budgets, escalation, and a tested rollback before the incident? |
+| 1 | Vet the supply chain | Are the model, dependencies, datasets, and tool code inventoried and pinned, or admitted on faith? |
+| 2 | Name the operator | Does every action trace to an identity, or is a static key doing the work? |
+| 3 | Draw the scope | Is there an allowlist and deny-by-default, or a wildcard grant? |
+| 4 | Classify the evidence | Is retrieved context validated, or does it flow straight into the prompt? |
+| 5 | Type the tools | Do tools enforce typed inputs at the seam, or take free-form blobs? |
+| 6 | Define done, keep the receipt | Is there an audit trail, or just the word "done"? |
+| 7 | Gate the never-states | Is the never-state a hard stop in code, or a warning in the prompt? |
+| 8 | Turn failures into fixtures | Do failures become regression cases, or vanish? |
+| 9 | Build the way home | Are there budgets, escalation, and a tested rollback before the incident? |
 
 ## The verdicts (this is the whole point)
 
@@ -42,10 +43,10 @@ A deliberately bad build: a hardcoded key, wildcard tool grants, untyped tool ca
 
 ```
 $ build-order audit examples/leaky-agent
-0 held · 0 attested · 3 gap · 5 unknown of 8 gates — 3 gap(s) block a clean build
+0 held · 0 attested · 3 gap · 6 unknown of 9 gates — 3 gap(s) block a clean build
 ```
 
-Gate 1 flags the key, gate 2 the wildcard, gate 7 the absent tests; the other five are UNKNOWN because the controls are simply not there to find. Nothing is HELD, and the run exits non-zero. Full card: [`examples/leaky-agent/SCORECARD.md`](examples/leaky-agent/SCORECARD.md).
+Gate 2 flags the key, gate 3 the wildcard, gate 8 the absent tests; the other six are UNKNOWN because the controls are simply not there to find. Nothing is HELD, and the run exits non-zero. Full card: [`examples/leaky-agent/SCORECARD.md`](examples/leaky-agent/SCORECARD.md).
 
 ## Hybrid: fill the gaps with receipts
 
@@ -74,7 +75,7 @@ build-order audit ./my-agent --attest attestation.json
 
 The static detectors are **heuristics**: they find signals, not guarantees. HELD means *the evidence is in the tree*, never *this is correct*.
 
-They also over-match on **repos that describe these patterns** rather than implement them — a rule list, a spec, or this repo. build-order's own source names every keyword it hunts for, so scanning itself is a weak signal; that's why the self-audit excludes its rule definitions (`--ignore gates.mjs`) and why the honest proofs here are the **13-test suite** and the **leaky-agent capture**, not a self-issued green card. When a detector fires on a reviewed false positive, silence it on that line with a `build-order:allow` comment — the same "gate the never-state, but allow the vetted exception" idea the tool audits for.
+They also over-match on **repos that describe these patterns** rather than implement them — a rule list, a spec, or this repo. build-order's own source names every keyword it hunts for, so scanning itself is a weak signal; that's why the self-audit excludes its rule definitions (`--ignore gates.mjs`) and why the honest proofs here are the **14-test suite** and the **leaky-agent capture**, not a self-issued green card. When a detector fires on a reviewed false positive, silence it on that line with a `build-order:allow` comment — the same "gate the never-state, but allow the vetted exception" idea the tool audits for.
 
 This is an assurance *aid*, not a certification. It tells you where to look. It does not tell you that you are safe.
 

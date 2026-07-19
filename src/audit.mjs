@@ -1,4 +1,4 @@
-// audit.mjs — run the eight gates over a target, merge attestation, score it.
+// audit.mjs — run the nine gates over a target, merge attestation, score it.
 import { basename } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { scanRepo } from './scanner.mjs';

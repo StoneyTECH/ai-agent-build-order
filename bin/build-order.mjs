@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// build-order — audit an AI agent build against the eight-gate Build Order.
+// build-order — audit an AI agent build against the nine-gate Build Order.
 //
 //   build-order audit <path> [--attest file.json] [--out SCORECARD.md] [--json]
 //
@@ -23,7 +23,7 @@ function parseArgs(argv) {
   return args;
 }
 
-const USAGE = `build-order — audit an agent build against the eight-gate Build Order
+const USAGE = `build-order — audit an agent build against the nine-gate Build Order
 
 Usage:
   build-order audit <path> [--attest file.json] [--out SCORECARD.md] [--json]

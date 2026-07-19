@@ -1,4 +1,4 @@
-// gates.mjs — the eight gates of the Build Order, each turned into a detector.
+// gates.mjs — the nine gates of the Build Order, each turned into a detector.
 //
 // Every detector returns { verdict, mode, evidence[] } where verdict is one of:
 //   held     — static evidence for the gate was found in the repo
@@ -16,7 +16,7 @@ const ev = (hits) => hits.map((h) => `${h.file}:${h.line} — ${h.text}`);
 // no real-looking token and never trips its own scan. build-order:allow
 const SECRET_PATTERNS = [
   new RegExp('AKIA' + '[0-9A-Z]{16}'),                                   // build-order:allow
-  new RegExp('sk-' + '[A-Za-z0-9_-]{16,}'),                              // build-order:allow
+  new RegExp('sk-(?:proj-)?' + '[A-Za-z0-9]{20,}'),                      // build-order:allow (no hyphens in body: "risk-management-framework" is not a key)
   // a *_KEY / *_TOKEN / *_SECRET var assigned a long, space-free literal
   new RegExp('\\b\\w*(key|token|secret|password|passwd|credential)\\b\\s*[:=]\\s*[\'"][^\'"\\s]{12,}[\'"]', 'i'), // build-order:allow
   new RegExp('Bearer\\s+[A-Za-z0-9._-]{20,}'),                           // build-order:allow
@@ -25,6 +25,23 @@ const SECRET_PATTERNS = [
 export const GATES = [
   {
     id: 1,
+    key: 'supply-chain',
+    title: 'Vet the supply chain',
+    essayLine: 'Approve the model, dependencies, datasets, and tool code you admit, and refuse the rest; the attack that opened the essay arrived as a dataset, not a prompt.',
+    detect(ctx) {
+      // Positive evidence that admitted materials are inventoried and pinned:
+      // an SBOM/AI-BOM, or a dependency lockfile. Absence is not a gap on its
+      // own (provenance may be vetted out of band) — it is unproven, so the
+      // build attests the model, dataset, and dependency provenance instead.
+      const sbom = ctx.paths(/\.cdx\.json$|(^|\/)(sbom|bom)\.(json|xml)$/i);
+      if (sbom.length) return { verdict: 'held', mode: 'static', evidence: [`SBOM/AI-BOM present: ${sbom.slice(0, 3).join(', ')}`] };
+      const lock = ctx.paths(/(^|\/)(package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|Cargo\.lock|Gemfile\.lock|go\.sum)$/i);
+      if (lock.length) return { verdict: 'held', mode: 'static', evidence: [`dependency lockfile present: ${lock.slice(0, 3).join(', ')}`] };
+      return { verdict: 'unknown', mode: 'attest', evidence: ['no SBOM or dependency lockfile found; attest the model, dataset, and dependency provenance you admit'] };
+    },
+  },
+  {
+    id: 2,
     key: 'operator',
     title: 'Name the operator',
     essayLine: "Authenticate who's asking, and give the agent an identity of its own, so every action traces back to a person or a policy.",
@@ -41,7 +58,7 @@ export const GATES = [
     },
   },
   {
-    id: 2,
+    id: 3,
     key: 'scope',
     title: 'Draw the scope, deny by default',
     essayLine: 'Write down what the agent may touch and deny everything else by default; a boundary that was never written down was never a boundary.',
@@ -55,7 +72,7 @@ export const GATES = [
     },
   },
   {
-    id: 3,
+    id: 4,
     key: 'evidence',
     title: 'Classify the evidence',
     essayLine: 'Decide which sources may enter context and how freshness and provenance get checked, and treat every input as adversarial until it proves otherwise.',
@@ -66,7 +83,7 @@ export const GATES = [
     },
   },
   {
-    id: 4,
+    id: 5,
     key: 'tools',
     title: 'Type the tools',
     essayLine: 'The model proposes and the tool performs; identity, authorization, typed inputs, idempotency, and limits hold at that seam, the one place they can be enforced rather than requested.',
@@ -77,7 +94,7 @@ export const GATES = [
     },
   },
   {
-    id: 5,
+    id: 6,
     key: 'receipts',
     title: 'Define done, keep the receipt',
     essayLine: 'A model saying "done" is a claim; a receipt is evidence. Keep the sources, the policy result, the changed state.',
@@ -88,7 +105,7 @@ export const GATES = [
     },
   },
   {
-    id: 6,
+    id: 7,
     key: 'never-states',
     title: 'Gate the never-states',
     essayLine: 'Anything that must not happen deserves a hard stop in code, not a warning in capital letters.',
@@ -99,7 +116,7 @@ export const GATES = [
     },
   },
   {
-    id: 7,
+    id: 8,
     key: 'fixtures',
     title: 'Turn failures into fixtures',
     essayLine: 'When a run fails, turn the failure into a fixture: a regression case, a graph edge, a tighter template that every future run walks through.',
@@ -116,7 +133,7 @@ export const GATES = [
     },
   },
   {
-    id: 8,
+    id: 9,
     key: 'way-home',
     title: 'Build the way home',
     essayLine: 'Budgets that expire, an escalation that lands with a person, a rollback that has actually been run, and a recovery model vetted on your own hardware before an incident asks.',

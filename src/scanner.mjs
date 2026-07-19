@@ -11,7 +11,7 @@ const DEFAULT_IGNORE_DIRS = new Set([
 // Only scan text/code files. Binaries and lockfiles carry no signal and
 // would just add noise (and false positives) to the heuristics.
 const TEXT_EXT = /\.(m?[jt]sx?|py|go|rs|rb|java|kt|cs|php|json|ya?ml|toml|svx|svelte|md|mdx|sh|bash|zsh|env|cfg|conf|ini|txt|Dockerfile)$/i;
-const TEXT_NAME = /^(Dockerfile|Makefile|\.env[.\w-]*|\.mcp\.json)$/i;
+const TEXT_NAME = /^(Dockerfile|Makefile|\.env[.\w-]*|\.mcp\.json|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|Cargo\.lock|Gemfile\.lock|go\.sum)$/i;
 
 // A line carrying this marker is skipped by anti-pattern scans. It is the
 // tool's own escape hatch for a reviewed false positive — the same "gate the

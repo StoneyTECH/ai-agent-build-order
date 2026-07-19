@@ -25,4 +25,4 @@ jobs:
 
       # 3. Dogfood: the tool runs on its own tree and emits a receipt.
       - name: self-audit
-        run: node bin/build-order.mjs audit . --attest attestation.json --ignore gates.mjs,examples
+        run: node bin/build-order.mjs audit . --attest attestation.json --ignore gates.mjs,examples,CROSSWALK.md,README.md

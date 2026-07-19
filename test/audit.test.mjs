@@ -45,16 +45,28 @@ test('a well-built repo lands most gates held', () => {
   assert.equal(sc.clean, true);
 });
 
-test('every gate id 1..8 is present exactly once', () => {
+test('every gate id 1..9 is present exactly once', () => {
   const root = fixture({ 'a.md': 'x' });
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });
-  assert.deepEqual(sc.gates.map((g) => g.id), [1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(sc.gates.map((g) => g.id), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+});
+
+test('supply chain (gate 1): a lockfile is HELD; its absence is UNKNOWN, not a gap', () => {
+  const withLock = fixture({ 'package-lock.json': '{}', 'src/a.js': 'export const x = 1;' });
+  const scLock = audit(withLock);
+  rmSync(withLock, { recursive: true, force: true });
+  assert.equal(verdictOf(scLock, 'supply-chain'), 'held');
+
+  const bare = fixture({ 'src/a.js': 'export const x = 1;' });
+  const scBare = audit(bare);
+  rmSync(bare, { recursive: true, force: true });
+  assert.equal(verdictOf(scBare, 'supply-chain'), 'unknown', 'no lockfile is unproven, not a false gap');
 });
 
 // ---------- adversarial ----------
 
-test('a hardcoded credential is a GAP on gate 1, not a pass', () => {
+test('a hardcoded credential is a GAP on the operator gate, not a pass', () => {
   const root = fixture({ 'config.js': `const key = "sk-abcdefghij0123456789ZZ";` }); // build-order:allow (fixture holds a fake secret on purpose)
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });
@@ -76,7 +88,7 @@ test('wildcard tool grant is a scope GAP', () => {
   assert.equal(verdictOf(sc, 'scope'), 'gap');
 });
 
-test('a repo with zero tests is a GAP on gate 7 (provable absence, not unknown)', () => {
+test('a repo with zero tests is a GAP on the fixtures gate (provable absence, not unknown)', () => {
   const root = fixture({ 'src/only.js': 'export const x = 1;' });
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });
@@ -90,7 +102,7 @@ test('an empty repo never crashes and inflates nothing', () => {
   // No signal anywhere → every gate is unknown or a provable gap, zero held.
   assert.equal(sc.summary.held, 0);
   assert.equal(sc.summary.attested, 0);
-  assert.ok(sc.summary.unknown + sc.summary.gap === 8);
+  assert.ok(sc.summary.unknown + sc.summary.gap === 9);
 });
 
 test('attestation lifts UNKNOWN to ATTESTED only with a receipt', () => {

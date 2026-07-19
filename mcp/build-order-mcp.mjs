@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// build-order-mcp — expose the eight-gate audit as one MCP tool, so an agent
+// build-order-mcp — expose the nine-gate audit as one MCP tool, so an agent
 // connected to it can scan its OWN working directory before it acts.
 //
 // This is the piece that plugs into the StoneyTECH public MCP. It declares a
@@ -23,7 +23,7 @@ export function registerBuildOrder(server) {
     {
       title: 'Build Order audit',
       description:
-        'Audit an agent build/codebase against the eight-gate Build Order (identity, scope, evidence, tools, receipts, never-states, fixtures, way-home). Read-only. Returns a scorecard: held / attested / gap / unknown per gate. Point it at your own working directory before granting the agent authority.',
+        'Audit an agent build/codebase against the nine-gate Build Order (identity, scope, evidence, tools, receipts, never-states, fixtures, way-home). Read-only. Returns a scorecard: held / attested / gap / unknown per gate. Point it at your own working directory before granting the agent authority.',
       inputSchema: {
         path: z.string().describe('Absolute or relative path to the repo/build to audit'),
         attestPath: z.string().optional().describe('Optional attestation JSON: receipts for gates that cannot be statically proven'),
