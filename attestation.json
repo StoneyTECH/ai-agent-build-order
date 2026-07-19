@@ -1,0 +1,25 @@
+{
+  "_comment": "build-order's attestation for its own build. Only gates with no static signal are claimed here, and each carries a receipt the reader can open. A static HELD or GAP overrides anything written here — see mergeAttestation.",
+  "gates": {
+    "operator": {
+      "attested": true,
+      "note": "read-only CLI/MCP tool; runs under the invoking user or MCP session identity, holds no credentials of its own and requests none",
+      "receipt": "src/scanner.mjs (no network, no writes) + bin/build-order.mjs"
+    },
+    "evidence": {
+      "attested": true,
+      "note": "every input is treated as adversarial: file reads are size-capped, non-text files are skipped, and the attestation file can never satisfy a static detector",
+      "receipt": "src/scanner.mjs TEXT_EXT/maxFileBytes + src/audit.mjs ignoreFiles"
+    },
+    "tools": {
+      "attested": true,
+      "note": "CLI args are parsed explicitly; the MCP wrapper exposes one typed tool (build_order_audit) with a declared input schema",
+      "receipt": "mcp/build-order-mcp.mjs inputSchema"
+    },
+    "way-home": {
+      "attested": true,
+      "note": "stateless read-only auditor: nothing to roll back. Its stop condition is exit code 1 on any GAP, which is how it lands with a human in CI",
+      "receipt": "bin/build-order.mjs process.exit(sc.clean ? 0 : 1) + .github/workflows/self-audit.yml"
+    }
+  }
+}

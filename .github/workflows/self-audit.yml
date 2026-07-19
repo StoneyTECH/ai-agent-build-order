@@ -1,0 +1,28 @@
+name: build-order
+on: [push, pull_request]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      # 1. The unit suite is the fixture wall (gate 7, on ourselves).
+      - name: tests
+        run: node --test
+
+      # 2. The tool must FAIL a known-bad build. If leaky-agent ever passes,
+      #    a detector regressed — exit 0 here is the failure.
+      - name: catch the leaky agent
+        run: |
+          if node bin/build-order.mjs audit examples/leaky-agent > /dev/null 2>&1; then
+            echo "::error::build-order did not flag examples/leaky-agent — a detector regressed"
+            exit 1
+          fi
+          echo "leaky-agent correctly blocked"
+
+      # 3. Dogfood: the tool runs on its own tree and emits a receipt.
+      - name: self-audit
+        run: node bin/build-order.mjs audit . --attest attestation.json --ignore gates.mjs,examples

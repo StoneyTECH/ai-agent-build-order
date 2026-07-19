@@ -1,0 +1,20 @@
+{
+  "name": "build-order",
+  "version": "0.1.0",
+  "description": "Audit an AI agent build against the eight-gate Build Order. Static where detectable, attested where not, every gate labeled which. Proof-of-work companion to 'Everything Gets Rebuilt'.",
+  "type": "module",
+  "bin": { "build-order": "bin/build-order.mjs" },
+  "exports": { ".": "./src/audit.mjs" },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node bin/build-order.mjs audit examples/leaky-agent --out examples/leaky-agent/SCORECARD.md || true",
+    "self-audit": "node bin/build-order.mjs audit . --attest attestation.json --ignore gates.mjs,examples",
+    "mcp": "node mcp/build-order-mcp.mjs"
+  },
+  "optionalDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.0"
+  },
+  "license": "MIT",
+  "keywords": ["ai-assurance", "agent-security", "mcp", "determinism-ladder", "secure-by-design", "audit", "secure-by-default"]
+}
