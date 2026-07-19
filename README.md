@@ -1,5 +1,7 @@
 # build-order
 
+> **Start with [CROSSWALK.md](CROSSWALK.md).** This repo is a principal architect's *reference architecture* for agent assurance: the eight-gate Build Order laid in dependency order, and for each gate, the [OWASP Agentic Top 10 (2026)](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) risk it closes, the determinism rung it lives on, and the **mature tool** that enforces it. For real detection, adopt those tools ([Snyk agent-scan](https://github.com/snyk/agent-scan), [agent-audit](https://github.com/HeadyZhang/agent-audit), AgentAuditKit) — this maps you to them and sequences their adoption. The audit CLI below is a teaching self-check, not a competitor to them.
+
 **Audit an AI agent build against the eight-gate Build Order.** Static where it can detect, attested where it can't, and every gate labeled which — so a self-report is never rendered as proof.
 
 This is the proof-of-work companion to the essay [*Everything Gets Rebuilt*](https://stoneytech.net/learn/2026-07-18-everything-gets-rebuilt). The essay ends with eight steps, in the order the rails get laid. This repo turns those steps into a check an agent can run against its own build before it is granted authority. The essay is the demo; this is the receipt.
