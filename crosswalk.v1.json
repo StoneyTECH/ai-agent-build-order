@@ -1,0 +1,69 @@
+{
+  "version": "crosswalk.v1",
+  "generated_from": "CROSSWALK.md",
+  "grounding": "primary source only; secondary paraphrases discarded where they disagreed",
+  "standards": [
+    { "id": "std:owasp-agentic-2026", "name": "OWASP Top 10 for Agentic Applications 2026", "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/", "canonical": "https://github.com/OWASP/www-project-top-10-for-large-language-model-applications" },
+    { "id": "std:nist-ai-rmf", "name": "NIST AI Risk Management Framework", "url": "https://www.nist.gov/itl/ai-risk-management-framework" },
+    { "id": "std:iso-42001", "name": "ISO/IEC 42001", "url": null }
+  ],
+  "risks": [
+    { "id": "asi:01", "code": "ASI01", "name": "Agent Goal Hijacking", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:02", "code": "ASI02", "name": "Tool Misuse and Exploitation", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:03", "code": "ASI03", "name": "Identity and Privilege Abuse", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:04", "code": "ASI04", "name": "Agentic Supply-Chain Compromise", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:05", "code": "ASI05", "name": "Unexpected Code Execution", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:06", "code": "ASI06", "name": "Memory and Context Poisoning", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:07", "code": "ASI07", "name": "Insecure Inter-Agent Communication", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:08", "code": "ASI08", "name": "Cascading Failures", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:09", "code": "ASI09", "name": "Human-Agent Trust Exploitation", "standard": "std:owasp-agentic-2026" },
+    { "id": "asi:10", "code": "ASI10", "name": "Rogue Agents", "standard": "std:owasp-agentic-2026" }
+  ],
+  "rungs": [
+    { "id": "rung:supply-admission", "name": "Build-time admission (CI + code)" },
+    { "id": "rung:identity", "name": "Identity / policy, in code" },
+    { "id": "rung:policy-gate", "name": "Gate / policy-as-code" },
+    { "id": "rung:retrieval-validation", "name": "Retrieval + code validation" },
+    { "id": "rung:typed-contract", "name": "Typed contract, in code" },
+    { "id": "rung:code-eval", "name": "Code + eval" },
+    { "id": "rung:hard-gate", "name": "Gate — hard stop in code" },
+    { "id": "rung:eval-ci", "name": "Eval / CI" },
+    { "id": "rung:recovery", "name": "Gate + human escalation" }
+  ],
+  "tools": [
+    { "id": "tool:snyk-agent-scan", "name": "Snyk agent-scan", "url": "https://github.com/snyk/agent-scan", "does": "MCP discovery; tool poisoning, shadowing, toxic flows" },
+    { "id": "tool:agent-audit", "name": "agent-audit", "url": "https://github.com/HeadyZhang/agent-audit", "does": "72 rules mapped to all ten ASI, AST tool-boundary taint tracking, MIT" },
+    { "id": "tool:agentauditkit", "name": "AgentAuditKit", "url": null, "does": "225 rules, SARIF, evidence mapped to 13 compliance frameworks" },
+    { "id": "tool:mcp-audit", "name": "mcp-audit", "url": "https://github.com/apisec-inc/mcp-audit", "does": "MCP config, cross-server attack paths, AI-BOM" },
+    { "id": "tool:sbom", "name": "SBOM / AI-BOM (CycloneDX)", "url": null, "does": "dependency + model inventory" },
+    { "id": "tool:opa", "name": "Policy-as-code (OPA)", "url": null, "does": "deny-by-default scope enforcement" },
+    { "id": "tool:iam", "name": "Cloud IAM / workload identity", "url": null, "does": "per-agent identity" },
+    { "id": "tool:sandbox", "name": "Sandboxing (microVM / gVisor)", "url": null, "does": "code-execution isolation" },
+    { "id": "tool:deepteam", "name": "DeepTeam", "url": "https://www.trydeepteam.com/docs/frameworks-owasp-top-10-for-agentic-applications", "does": "LLM red-team eval mapped to OWASP Agentic" }
+  ],
+  "gates": [
+    { "id": "gate:1", "n": 1, "key": "supply-chain", "title": "Vet the supply chain", "rung": "rung:supply-admission", "closes": ["asi:04"], "supports": ["asi:06"], "enforced_by": ["tool:sbom", "tool:mcp-audit", "tool:snyk-agent-scan"], "buildbuy": "adopt SBOM + dependency scanning; author the approval policy" },
+    { "id": "gate:2", "n": 2, "key": "operator", "title": "Name the operator", "rung": "rung:identity", "closes": ["asi:03"], "supports": ["asi:09", "asi:10"], "enforced_by": ["tool:iam"], "buildbuy": "adopt — identity is solved; carry no static keys" },
+    { "id": "gate:3", "n": 3, "key": "scope", "title": "Draw the scope, deny by default", "rung": "rung:policy-gate", "closes": ["asi:02", "asi:03"], "supports": [], "enforced_by": ["tool:opa", "tool:snyk-agent-scan", "tool:mcp-audit"], "buildbuy": "adopt engine, author the policy" },
+    { "id": "gate:4", "n": 4, "key": "evidence", "title": "Classify the evidence", "rung": "rung:retrieval-validation", "closes": ["asi:06", "asi:01"], "supports": ["asi:02"], "enforced_by": ["tool:agent-audit", "tool:snyk-agent-scan"], "buildbuy": "buy detection, build the provenance rule" },
+    { "id": "gate:5", "n": 5, "key": "tools", "title": "Type the tools", "rung": "rung:typed-contract", "closes": ["asi:02", "asi:05", "asi:07"], "supports": [], "enforced_by": ["tool:agent-audit"], "buildbuy": "build the contracts, buy the taint scanner" },
+    { "id": "gate:6", "n": 6, "key": "receipts", "title": "Define done, keep the receipt", "rung": "rung:code-eval", "closes": ["asi:10", "asi:08", "asi:09"], "supports": [], "enforced_by": ["tool:mcp-audit"], "buildbuy": "adopt logging, define the receipt schema" },
+    { "id": "gate:7", "n": 7, "key": "never-states", "title": "Gate the never-states", "rung": "rung:hard-gate", "closes": ["asi:05", "asi:02", "asi:08"], "supports": [], "enforced_by": ["tool:sandbox", "tool:agent-audit"], "buildbuy": "adopt sandbox, author the never-states" },
+    { "id": "gate:8", "n": 8, "key": "fixtures", "title": "Turn failures into fixtures", "rung": "rung:eval-ci", "closes": ["asi:08"], "supports": [], "enforced_by": ["tool:deepteam"], "buildbuy": "adopt the harness, build the corpus" },
+    { "id": "gate:9", "n": 9, "key": "way-home", "title": "Build the way home", "rung": "rung:recovery", "closes": ["asi:08", "asi:10", "asi:09"], "supports": [], "enforced_by": [], "buildbuy": "build the recovery path, adopt the primitives" }
+  ],
+  "sequence": [
+    { "from": "gate:2", "rel": "depends_on", "to": "gate:1" },
+    { "from": "gate:3", "rel": "depends_on", "to": "gate:2" },
+    { "from": "gate:4", "rel": "depends_on", "to": "gate:3" },
+    { "from": "gate:5", "rel": "depends_on", "to": "gate:4" },
+    { "from": "gate:6", "rel": "depends_on", "to": "gate:5" },
+    { "from": "gate:7", "rel": "depends_on", "to": "gate:6" },
+    { "from": "gate:8", "rel": "depends_on", "to": "gate:7" },
+    { "from": "gate:9", "rel": "depends_on", "to": "gate:8" }
+  ],
+  "coverage_gaps": [
+    { "risk": "asi:07", "coverage": "partial", "gate": "gate:5", "note": "inter-agent message trust, replay, impersonation under-served; strengthen with signed typed inter-agent contracts before going multi-agent" },
+    { "risk": "asi:09", "coverage": "partial", "gate": "gate:6", "note": "human over-reliance is a presentation-layer risk; needs surfaced provenance, confidence, and refusal that build-time gates do not reach" }
+  ]
+}
