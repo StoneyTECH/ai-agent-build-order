@@ -63,10 +63,21 @@ export class RepoContext {
 
   // Case-insensitive, non-global grep. Returns up to `limit` hits as
   // { file, line, text }. `skipAllowed` drops lines carrying ALLOW_MARKER.
+  //
+  // `pattern` is a regex/string, or a predicate over the line for detectors a
+  // regex cannot express. The predicate runs here rather than over the returned
+  // hits so rejections never consume `limit` — otherwise a handful of near
+  // misses at the top of a tree would crowd out the real finding below them.
   grep(pattern, { include, limit = 5, skipAllowed = false } = {}) {
-    const src = pattern instanceof RegExp ? pattern.source : pattern;
-    const flags = (pattern instanceof RegExp ? pattern.flags : '').replace('g', '');
-    const rx = new RegExp(src, flags.includes('i') ? flags : flags + 'i');
+    let matches;
+    if (typeof pattern === 'function') {
+      matches = pattern;
+    } else {
+      const src = pattern instanceof RegExp ? pattern.source : pattern;
+      const flags = (pattern instanceof RegExp ? pattern.flags : '').replace('g', '');
+      const rx = new RegExp(src, flags.includes('i') ? flags : flags + 'i');
+      matches = (line) => rx.test(line);
+    }
     const hits = [];
     for (const f of this.files) {
       const relPath = this.rel(f);
@@ -76,7 +87,7 @@ export class RepoContext {
       const lines = text.split('\n');
       for (let i = 0; i < lines.length; i++) {
         if (skipAllowed && lines[i].includes(ALLOW_MARKER)) continue;
-        if (rx.test(lines[i])) {
+        if (matches(lines[i])) {
           hits.push({ file: relPath, line: i + 1, text: lines[i].trim().slice(0, 140) });
           if (hits.length >= limit) return hits;
         }

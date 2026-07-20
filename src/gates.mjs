@@ -15,12 +15,74 @@ const ev = (hits) => hits.map((h) => `${h.file}:${h.line} — ${h.text}`);
 // Secret-shaped literals, assembled from fragments so this source file carries
 // no real-looking token and never trips its own scan. build-order:allow
 const SECRET_PATTERNS = [
-  new RegExp('AKIA' + '[0-9A-Z]{16}'),                                   // build-order:allow
-  new RegExp('sk-(?:proj-)?' + '[A-Za-z0-9]{20,}'),                      // build-order:allow (no hyphens in body: "risk-management-framework" is not a key)
-  // a *_KEY / *_TOKEN / *_SECRET var assigned a long, space-free literal
-  new RegExp('\\b\\w*(key|token|secret|password|passwd|credential)\\b\\s*[:=]\\s*[\'"][^\'"\\s]{12,}[\'"]', 'i'), // build-order:allow
-  new RegExp('Bearer\\s+[A-Za-z0-9._-]{20,}'),                           // build-order:allow
+  new RegExp('AKIA' + '[0-9A-Z]{16}', 'i'),                              // build-order:allow
+  new RegExp('sk-(?:proj-)?' + '[A-Za-z0-9]{20,}', 'i'),                 // build-order:allow (no hyphens in body: "risk-management-framework" is not a key)
+  new RegExp('Bearer\\s+[A-Za-z0-9._-]{20,}', 'i'),                      // build-order:allow
 ];
+
+// The shortest unbroken run of characters that could carry a secret's entropy.
+// It is both the floor for a whole value and, below, the floor for any one
+// segment of it — the same argument applies at both scales, so it is one number.
+const MIN_SECRET_RUN = 12;
+
+// A *_KEY / *_TOKEN / *_SECRET label assigned a long, space-free literal.
+// Global on purpose: one line can carry several assignments, and a benign one
+// first must not hide a real key second.
+const LABELLED_LITERAL = new RegExp('\\b\\w*(key|token|secret|password|passwd|credential)\\b\\s*[:=]\\s*[\'"]([^\'"\\s]{' + MIN_SECRET_RUN + ',})[\'"]', 'gi'); // build-order:allow
+
+// Does this line hardcode a credential? The label is only the doorway — a
+// mature codebase is full of names ending in Key or Secret — so the VALUE has
+// to carry the match. Exported because it is the detector most worth testing
+// directly: its false positives are what make an audit unreadable.
+export function looksLikeHardcodedSecret(line) {
+  if (SECRET_PATTERNS.some((p) => p.test(line))) return true;
+  for (const m of line.matchAll(LABELLED_LITERAL)) if (isSecretShapedValue(m[2], m[1])) return true;
+  return false;
+}
+
+// A reference names a secret; it is never one. `${VAR}` and `$(cmd)`
+// substitutions, `{placeholder}` and `<placeholder>` templates, `%VAR%`
+// expansion — all resolve elsewhere, so the literal sitting in the file is a
+// variable's name, not its contents.
+const REFERENCE_VALUE = /\$\{|\$\(|\{\w+\}|%\w+%|<[^>]*>/;
+
+// A URL is a locator.
+const URL_VALUE = /^[a-z][a-z0-9+.-]*:\/\//i;
+
+// Word-ish: a plain word or a short number. Anything mixing cases, letters and
+// digits, or running longer than a word is entropy, and entropy is the tell.
+const WORDISH = (seg) => /^[A-Za-z]{1,24}$/.test(seg) || /^[0-9]{1,6}$/.test(seg);
+
+const segments = (v) => v.split(/[._:/\\-]+/).filter(Boolean);
+
+// A dotted or namespaced identifier — a hostname, a resource path, a log or
+// idempotency key. Every segment is word-ish, so there is nowhere in the string
+// for a secret to hide. The trigger is a NAMESPACING separator (`.` `:` `/`),
+// which is what tells `secretmanager.googleapis.com` from a long opaque run.
+const isNamespacedValue = (v) => /[.:/]/.test(v) && segments(v).every(WORDISH);
+
+// Nothing in it is secret-sized. A string whose every segment falls under the
+// floor is a compound of short tokens — `gpt-55-openai-us`,
+// `cloudflare-r2-read-access-key-id`, `standards-led-evidence-signing`. Secret
+// managers *name* their secrets, so a *_KEY / *_TOKEN / *_SECRET label holding
+// one of these is a pointer, not a credential. That single shape accounted for
+// 46 of this detector's 50 hits on a real monorepo, none of them real.
+const hasNoSecretSizedRun = (v) => segments(v).every((s) => s.length < MIN_SECRET_RUN);
+
+// ...but nobody stores the *name* of a password, so the rule above does not
+// apply to a password label. That is what keeps `password = "correct-horse-
+// battery-staple"` a gap while `SIGNING_KEY_SECRET = "standards-led-evidence-
+// signing"` goes quiet — same shape, different claim about what it holds.
+const NAMEABLE_LABEL = /key|token|secret|credential/i;
+
+// The label got us here; the value decides. Whatever survives is an opaque,
+// entropy-bearing run of characters — which is what a secret actually looks like.
+function isSecretShapedValue(value, label) {
+  if (REFERENCE_VALUE.test(value) || URL_VALUE.test(value)) return false;
+  if (isNamespacedValue(value)) return false;
+  if (NAMEABLE_LABEL.test(label) && hasNoSecretSizedRun(value)) return false;
+  return true;
+}
 
 export const GATES = [
   {
@@ -48,10 +110,8 @@ export const GATES = [
     detect(ctx) {
       // Anti-pattern first: a hardcoded credential is the loudest failure of
       // "run under an identity." If one is present, that is a gap, full stop.
-      for (const p of SECRET_PATTERNS) {
-        const hits = ctx.grep(p, { limit: 3, skipAllowed: true });
-        if (hits.length) return { verdict: 'gap', mode: 'static', evidence: [`hardcoded credential-shaped literal: ${ev(hits).join('; ')}`] };
-      }
+      const secrets = ctx.grep(looksLikeHardcodedSecret, { limit: 3, skipAllowed: true });
+      if (secrets.length) return { verdict: 'gap', mode: 'static', evidence: [`hardcoded credential-shaped literal: ${ev(secrets).join('; ')}`] };
       const id = ctx.grep(/principal|service.?account|agent.?identity|caller.?identity|assume.?role|workload.?identity|per-agent (identity|credential)|authenticat/i, { limit: 4 });
       if (id.length) return { verdict: 'held', mode: 'static', evidence: ev(id) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no identity/principal wiring detected; attest how the agent runs under its own identity'] };

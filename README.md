@@ -75,7 +75,9 @@ build-order audit ./my-agent --attest attestation.json
 
 The static detectors are **heuristics**: they find signals, not guarantees. HELD means *the evidence is in the tree*, never *this is correct*.
 
-They also over-match on **repos that describe these patterns** rather than implement them — a rule list, a spec, or this repo. build-order's own source names every keyword it hunts for, so scanning itself is a weak signal; that's why the self-audit excludes its rule definitions (`--ignore gates.mjs`) and why the honest proofs here are the **14-test suite** and the **leaky-agent capture**, not a self-issued green card. When a detector fires on a reviewed false positive, silence it on that line with a `build-order:allow` comment — the same "gate the never-state, but allow the vetted exception" idea the tool audits for.
+They also over-match on **repos that describe these patterns** rather than implement them — a rule list, a spec, or this repo. build-order's own source names every keyword it hunts for, so scanning itself is a weak signal; that's why the self-audit excludes its rule definitions (`--ignore gates.mjs`) and why the honest proofs here are the **20-test suite** and the **leaky-agent capture**, not a self-issued green card. When a detector fires on a reviewed false positive, silence it on that line with a `build-order:allow` comment — the same "gate the never-state, but allow the vetted exception" idea the tool audits for.
+
+The secret detector on gate 2 requires the **value** to look like a secret, not just the label — a mature codebase is full of names ending in `Key` or `Secret` that hold references (`${VAR}`), hostnames, paths, or resource names. It reads a value as a name, not a credential, when no run of characters in it is long enough to carry a secret's entropy. The deliberate trade: a hyphenated passphrase under a `*_KEY`/`*_TOKEN`/`*_SECRET` label reads as a resource name and goes quiet. Under a `password` label it still flags, because nobody stores the *name* of a password.
 
 This is an assurance *aid*, not a certification. It tells you where to look. It does not tell you that you are safe.
 

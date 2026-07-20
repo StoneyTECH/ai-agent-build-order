@@ -8,7 +8,7 @@ import { join } from 'node:path';
 
 import { audit, mergeAttestation } from '../src/audit.mjs';
 import { scanRepo, ALLOW_MARKER } from '../src/scanner.mjs';
-import { GATES } from '../src/gates.mjs';
+import { GATES, looksLikeHardcodedSecret } from '../src/gates.mjs';
 
 // Build a throwaway repo from a { path: contents } map and return its root.
 function fixture(files) {
@@ -79,6 +79,83 @@ test('the ALLOW_MARKER escape hatch suppresses a reviewed false positive', () =>
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });
   assert.notEqual(verdictOf(sc, 'operator'), 'gap', 'allow-marked line must not be flagged');
+});
+
+// ---------- adversarial: the VALUE has to look like a secret, not just the label ----------
+//
+// A label ending in key/token/secret proves nothing on its own — a mature
+// codebase is full of them. Flagging the label was this detector's worst
+// false-positive source, and the reason auditing a whole monorepo was useless.
+
+// Every line here is a real false positive from auditing a real repo.
+const NOT_CREDENTIALS = [
+  'const job = { idempotencyKey: "idempotency:chatops-human-join" };',       // colon-namespaced id
+  'const cfg = { secret: "secretmanager.googleapis.com" };',                 // a hostname
+  '      - --secret="${_CLOUDFLARE_TOKEN_SECRET_ID}"',                       // a Cloud Build substitution
+  'const apiKey = "${fakeApiKey}";',                                         // a template interpolation
+  'const vaultSecret = "/run/secrets/app.json";',                            // a path
+  'const secret = "https://secretmanager.googleapis.com/v1/projects/p/s";',  // a locator
+  'OBJECT_LIST_TOKEN_SECRET="cloudflare-r2-object-list-api-token"',          // a Secret Manager NAME
+  'const modelKey = "claude-opus-47-anthropic-direct-us";',                  // a model identifier
+  'idempotencyKey: "{changeRequestId}:{evidenceObjectSha256}",',             // a template
+];
+
+// ...and the ones that must never go quiet. If any of these stops flagging,
+// the fix bought its false-positive rate with a false negative.
+const CREDENTIALS = [
+  'const key = "sk-abcdefghij0123456789ZZ";',                                  // build-order:allow (fixture)
+  'const OPENAI_KEY = "sk-live-not-a-real-key-abcdefghijklmnop";',             // build-order:allow (fixture) — leaky-agent's line: `-` is not a namespace separator
+  'password = "9f8Xq2Lm4Rt7Vz0Bn5Kd";',                                        // build-order:allow (fixture) — opaque high-entropy run
+  'api_token: "aGVsbG8gd29ybGQgdGhpcyBpcyBub3QgcmVhbA=="',                     // build-order:allow (fixture) — base64
+  'const credential = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NSJ9.dozjgNryP4J3jVmNHl0w5N";', // build-order:allow (fixture) — a JWT is dotted but is not a hostname
+  'password = "correct-horse-battery-staple";',                                // build-order:allow (fixture) — no segment is secret-sized, but a password label holds the password
+];
+
+test('a *_SECRET label may hold a secret NAME; a password label holds the password', () => {
+  // Secret managers name their secrets, so `*_KEY`/`*_TOKEN`/`*_SECRET` routinely
+  // point at a resource instead of holding one — 46 lines of one real repo were
+  // exactly this, and they were the whole reason `--target .` was unusable.
+  assert.equal(looksLikeHardcodedSecret('SIGNING_KEY_SECRET = "standards-led-evidence-signing";'), false);
+  // Nobody stores the *name* of a password. Same value, different claim.
+  assert.equal(looksLikeHardcodedSecret('password = "standards-led-evidence-signing";'), true); // build-order:allow (fixture)
+});
+
+test('a labelled value that is a reference or an identifier is NOT a credential', () => {
+  for (const line of NOT_CREDENTIALS) {
+    assert.equal(looksLikeHardcodedSecret(line), false, `false positive on: ${line}`);
+  }
+});
+
+test('a labelled value that is actually secret-shaped is STILL a credential', () => {
+  for (const line of CREDENTIALS) {
+    assert.equal(looksLikeHardcodedSecret(line), true, `false negative on: ${line}`);
+  }
+});
+
+test('a benign labelled value cannot hide a real key later on the same line', () => {
+  const line = '{ secret: "secretmanager.googleapis.com", apiKey: "9f8Xq2Lm4Rt7Vz0Bn5Kd" }'; // build-order:allow (fixture)
+  assert.equal(looksLikeHardcodedSecret(line), true, 'the scan must not stop at the first labelled value');
+});
+
+test('a mature repo full of *Key/*Secret labels is not a false GAP', () => {
+  const root = fixture({
+    'src/queue.ts': NOT_CREDENTIALS.join('\n'),
+    'cloudbuild.yaml': 'steps:\n  - args: [ "--secret=${_CLOUDFLARE_TOKEN_SECRET_ID}" ]\n',
+  });
+  const sc = audit(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.notEqual(verdictOf(sc, 'operator'), 'gap', 'labels alone must not fail the operator gate');
+});
+
+test('false positives ahead of a real key do not crowd it out of the hit limit', () => {
+  const root = fixture({
+    // The benign lines come first and outnumber the evidence limit. Filtering
+    // has to happen while scanning, not after the hits are already capped.
+    'src/config.ts': `${NOT_CREDENTIALS.join('\n')}\nconst signingKey = "9f8Xq2Lm4Rt7Vz0Bn5Kd";\n`, // build-order:allow (fixture)
+  });
+  const sc = audit(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(verdictOf(sc, 'operator'), 'gap', 'a real key after six false positives is still a gap');
 });
 
 test('wildcard tool grant is a scope GAP', () => {
