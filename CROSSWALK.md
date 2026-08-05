@@ -52,6 +52,30 @@ Crosswalks and posture-scoring for OWASP Agentic already exist (for example, the
 
 For **detection**, run the tools above. For **conformance**, read the OWASP standard. This is the map that tells you the order to adopt them in and where each control has to live.
 
+## Planned: a second lens, MITRE ATLAS
+
+The OWASP Agentic Top 10 frames risk closure. MITRE ATLAS frames adversary
+cost, at finer grain — 170 techniques against 10 risks.
+
+A design for mapping the nine gates to ATLAS is in
+[docs/atlas-crosswalk-plan.md](docs/atlas-crosswalk-plan.md). It is a plan, not
+an implementation.
+
+The finding that makes it worth doing: ATLAS ships 35 mitigations covering 75
+of its 170 techniques, which leaves **95 with no published control** — and 30
+of those are agent or LLM relevant, including the whole agent-tool supply-chain
+cluster (`AML.T0104` Publish Poisoned AI Agent Tool, `AML.T0110` AI Agent Tool
+Poisoning, `AML.T0109` AI Supply Chain Rug Pull). MITRE names those attacks and
+publishes no mitigation for them. That gap is where build-time gates have
+something to say.
+
+The plan keeps two mapping classes apart, for the same reason this repo already
+separates static detection from attestation: an edge backed by an ATLAS
+mitigation carries MITRE's authority, and an edge we assert carries only ours.
+Blending them would launder our claims as theirs.
+
+Grounded against ATLAS v5.6.0, release `v2026.06`.
+
 ## Provenance note
 
 The authoritative ASI01–ASI10 enumeration here is taken from the OWASP primary source. A widely-cited secondary blog listed ASI05–ASI08 as four different categories; it was wrong. Grounding a reference architecture on a secondary paraphrase would have mis-mapped half the coverage. Pull the primary. Always.
