@@ -260,23 +260,54 @@ test('AC15 the existing OWASP crosswalk is untouched', () => {
 
 // ------------------------------------------------- known upstream delta
 // The STIX distribution and the YAML distribution of the same ATLAS release
-// disagree. Verified 2026-08-05 against v2026.06: the YAML publishes 246
-// mitigation-to-technique edges, the STIX bundle 244. The two missing edges
-// are both on AML.T0052.001 (Deepfake-Assisted Phishing) — the technique and
-// both mitigations exist in STIX, only the `mitigates` relationships are
-// absent. Nothing goes the other way.
+// disagree. Verified 2026-08-05 against v2026.06.
+//
+// The headline defect is that 246 `mitigates` relationship objects in the STIX
+// bundle carry only 166 distinct `id` values. Thirty-four ids are reused across
+// two or more relationships, and in every one of those groups the only field
+// that differs is `target_ref` — same source, same description, different
+// technique. STIX 2.1 requires `id` to be unique; it is the primary key. A
+// consumer that loads the bundle into `{obj.id: obj}` therefore keeps 166 of
+// 246 mitigation edges and silently drops 80 of them, a third of the graph.
+// `subtechnique-of` is clean at 69/69, so this is specific to how `mitigates`
+// relationships are assigned ids.
+//
+// Underneath that, two smaller defects that happen to cancel in the totals:
+// two YAML edges are missing from STIX (both on AML.T0052.001), and two are
+// duplicated (both onto AML.T0043.001). Raw object counts land on 246 in both
+// distributions and match exactly, which is why a totals check never fires and
+// why this went unnoticed.
 //
 // This repository reads STIX, because it has no dependencies and YAML would
-// need one. So the delta is pinned here rather than left as a comment. When
-// MITRE fixes the export this test fails, which is the point: a silent
-// correction upstream would otherwise change our coverage numbers with no
-// signal.
+// need one. We are immune to the id collision only because buildAtlasBlock
+// iterates `objects` directly and uses its id map solely to resolve
+// source_ref/target_ref, which point at attack-pattern and course-of-action
+// objects whose ids ARE unique. That immunity is load-bearing and easy to
+// destroy by "tidying" the reader into an id-keyed pass, so it is pinned below
+// rather than left to comments.
+//
+// The delta is pinned so that when MITRE fixes the export this test fails —
+// that is the point. A silent correction upstream would otherwise change our
+// coverage numbers with no signal.
 
 export const KNOWN_STIX_DELTA = {
   release: 'v2026.06',
   missingFromStix: [
     { technique: 'AML.T0052.001', mitigations: ['AML.M0018', 'AML.M0034'] }
-  ]
+  ],
+  duplicatedInStix: [
+    { technique: 'AML.T0043.001', mitigations: ['AML.M0002', 'AML.M0004'] }
+  ],
+  // 246 mitigates relationship objects sharing 166 ids across 34 collision
+  // groups. The 80 surplus objects are unreachable by id.
+  idCollisions: {
+    relationshipType: 'mitigates',
+    objects: 246,
+    distinctIds: 166,
+    collidingIds: 34,
+    unreachableById: 80,
+    onlyDifferingField: 'target_ref'
+  }
 };
 
 test('the known STIX/YAML delta is still exactly what we recorded', () => {
@@ -284,6 +315,35 @@ test('the known STIX/YAML delta is still exactly what we recorded', () => {
   assert.deepEqual(
     KNOWN_STIX_DELTA.missingFromStix[0].mitigations.slice().sort(),
     ['AML.M0018', 'AML.M0034']
+  );
+  assert.deepEqual(
+    KNOWN_STIX_DELTA.duplicatedInStix[0].mitigations.slice().sort(),
+    ['AML.M0002', 'AML.M0004']
+  );
+  const c = KNOWN_STIX_DELTA.idCollisions;
+  assert.equal(c.objects - c.distinctIds, c.unreachableById);
+});
+
+test('an id collision in the bundle does not cost us an edge', () => {
+  // The upstream shape: one relationship id reused for two different targets.
+  // A reader that keyed relationships by id would see one edge here, not two.
+  const b = stixBundle();
+  b.objects.push(
+    { type: 'relationship', relationship_type: 'mitigates',
+      id: 'collide-1', source_ref: 'x4', target_ref: 'x2' },
+    { type: 'relationship', relationship_type: 'mitigates',
+      id: 'collide-1', source_ref: 'x4', target_ref: 'x3' }
+  );
+
+  const block = buildAtlasBlock(b, RELEASE);
+  const m = block.mitigations.find((x) => x.id === 'AML.M0032');
+
+  // AML.T0098 was already mitigated by the base fixture; AML.T0110 arrives
+  // only through the second of the two colliding objects.
+  assert.deepEqual(m.techniques.slice().sort(), ['AML.T0098', 'AML.T0110']);
+  assert.ok(
+    block.techniques.find((t) => t.id === 'AML.T0110').mitigations.includes('AML.M0032'),
+    'the edge carried by the shadowed object survived'
   );
 });
 
