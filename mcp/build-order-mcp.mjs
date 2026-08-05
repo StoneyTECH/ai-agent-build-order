@@ -16,6 +16,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import { audit } from '../src/audit.mjs';
 import { renderMarkdown, renderLine } from '../src/render.mjs';
+import { atlasCoverage, renderCoverageMarkdown } from '../src/atlas-report.mjs';
 
 export function registerBuildOrder(server) {
   server.registerTool(
@@ -40,6 +41,41 @@ export function registerBuildOrder(server) {
       };
     },
   );
+  server.registerTool(
+    'build_order_atlas_coverage',
+    {
+      title: 'Build Order ATLAS coverage',
+      description:
+        'Report how the nine Build Order gates map to MITRE ATLAS. Two edge classes are counted separately and never summed: mitigation-backed edges implement a control ATLAS publishes and carry MITRE authority, asserted edges cover techniques ATLAS names but publishes no control for and carry only this project\'s authority, each with a written rationale. Techniques no gate addresses are reported as open rather than omitted, because silence would read as coverage. Read-only, no arguments, answers from the pinned release recorded in the crosswalk.',
+      inputSchema: {
+        outputFormat: z.enum(['markdown', 'json']).optional().describe('Defaults to markdown'),
+      },
+    },
+    async ({ outputFormat = 'markdown' }) => {
+      const rep = atlasCoverage();
+      if (!rep) {
+        return {
+          content: [{ type: 'text', text: 'No ATLAS block in this crosswalk.' }],
+          isError: true,
+        };
+      }
+      return {
+        content: [
+          {
+            type: 'text',
+            text: outputFormat === 'json' ? JSON.stringify(rep, null, 2) : renderCoverageMarkdown(),
+          },
+        ],
+        structuredContent: rep,
+        // Coverage is never a failure. Open techniques are the expected state,
+        // not a gap for an agent to treat as blocking.
+        _meta: {
+          summary: `ATLAS ${rep.release}: ${rep.mitigationBacked} mitigation-backed, ${rep.asserted} asserted, ${rep.open.length} open`,
+        },
+      };
+    },
+  );
+
   return server;
 }
 

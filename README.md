@@ -7,7 +7,8 @@
 This is the proof-of-work companion to the essay [*Everything Gets Rebuilt*](https://stoneytech.net/learn/2026-07-18-everything-gets-rebuilt). The essay ends with nine steps, in the order the rails get laid. This repo turns those steps into a check an agent can run against its own build before it is granted authority. The essay is the demo; this is the receipt.
 
 ```
-npx build-order audit ./my-agent
+npx build-order audit ./my-agent     # the nine-gate scorecard
+npx build-order atlas                # MITRE ATLAS crosswalk coverage
 ```
 
 ## The nine gates
@@ -66,6 +67,30 @@ build-order audit ./my-agent --attest attestation.json
 ```
 
 `attested: true` with a receipt → **ATTESTED**. Without a receipt → stays **UNKNOWN**. `attested: false` → an honest **GAP**.
+
+## ATLAS coverage
+
+`build-order atlas` reports how the nine gates map to MITRE ATLAS, pinned to
+the release recorded in `crosswalk.v1.json`.
+
+Two edge classes, counted separately and never summed:
+
+- **mitigation-backed** — the gate implements a control ATLAS publishes.
+  Technique coverage is derived from MITRE's own relationships, so it carries
+  their authority.
+- **asserted** — ATLAS names the technique and publishes no control for it. The
+  gate is claimed to raise its cost, with a written rationale. This carries
+  ours.
+
+Techniques no gate addresses are reported **open**, never omitted. Most of
+ATLAS concerns training-time and model-theft attacks a build-time audit does
+not touch, so a large open count is the expected result.
+
+`scripts/map-gates.mjs` regenerates the block and validates every edge. It
+refuses an unlabelled edge, an asserted edge with no rationale, a
+mitigation-backed edge that restates derived coverage, and — deliberately — an
+asserted edge for a technique ATLAS already mitigates, naming the mitigation to
+use instead.
 
 ## For an agent, over MCP
 

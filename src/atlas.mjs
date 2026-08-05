@@ -208,3 +208,44 @@ export function coverageReport(gates, block) {
     open: all.filter((id) => !addressed.has(id)).sort()
   };
 }
+
+/**
+ * Compare a pinned release against a newer one.
+ *
+ * ATLAS ships releases. A crosswalk that cannot notice is a crosswalk that
+ * quietly starts lying — it keeps citing ids that moved, and it keeps
+ * asserting coverage for techniques MITRE has since published a control for.
+ *
+ * `upgradable` is the one that matters. An asserted edge carries our authority
+ * because no ATLAS mitigation existed. The moment one does, the honest move is
+ * to cite MITRE instead of ourselves, and this is what surfaces that.
+ */
+export function driftReport(pinned, next, gates) {
+  const before = new Map(pinned.techniques.map((t) => [t.id, t]));
+  const after = new Map(next.techniques.map((t) => [t.id, t]));
+
+  const added = [...after.keys()].filter((id) => !before.has(id)).sort();
+  const removed = [...before.keys()].filter((id) => !after.has(id)).sort();
+
+  const renamed = [...before.values()]
+    .filter((t) => after.has(t.id) && after.get(t.id).name !== t.name)
+    .map((t) => ({ id: t.id, from: t.name, to: after.get(t.id).name }))
+    .sort((a, b) => (a.id < b.id ? -1 : 1));
+
+  const upgradable = [];
+  for (const gate of gates) {
+    for (const e of gate.atlas || []) {
+      if (e.class !== 'asserted' || !e.technique) continue;
+      const now = after.get(e.technique);
+      if (now && now.mitigations.length) {
+        upgradable.push({
+          gate: gate.id,
+          technique: e.technique,
+          mitigations: [...now.mitigations].sort()
+        });
+      }
+    }
+  }
+
+  return { from: pinned.release, to: next.release, added, removed, renamed, upgradable };
+}

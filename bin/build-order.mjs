@@ -8,6 +8,7 @@
 import { writeFileSync } from 'node:fs';
 import { audit } from '../src/audit.mjs';
 import { renderMarkdown, renderLine } from '../src/render.mjs';
+import { renderCoverageMarkdown, atlasCoverage } from '../src/atlas-report.mjs';
 
 function parseArgs(argv) {
   const args = { _: [], attest: null, out: null, json: false, ignore: [] };
@@ -27,15 +28,31 @@ const USAGE = `build-order — audit an agent build against the nine-gate Build 
 
 Usage:
   build-order audit <path> [--attest file.json] [--out SCORECARD.md] [--json]
+  build-order atlas [--json]
 
 Verdicts:
   HELD      static evidence in the repo        ATTESTED  self-reported, receipt required
   GAP       anti-pattern or provable absence   UNKNOWN   no signal, no attestation
 
-Exit 1 if any gate is a GAP. Attested/unknown do not fail the build.`;
+Exit 1 if any gate is a GAP. Attested/unknown do not fail the build.
+
+The atlas command prints MITRE ATLAS crosswalk coverage for the nine gates.
+Edges backed by a published ATLAS mitigation and edges this project asserts
+are counted separately and never summed.`;
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
+
+  if (args._[0] === 'atlas' && !args.help) {
+    const rep = atlasCoverage();
+    if (!rep) {
+      console.error('build-order: no ATLAS block in crosswalk.v1.json');
+      process.exit(2);
+    }
+    console.log(args.json ? JSON.stringify(rep, null, 2) : renderCoverageMarkdown());
+    process.exit(0);   // reporting coverage is never a build failure
+  }
+
   if (args.help || args._[0] !== 'audit' || !args._[1]) {
     console.log(USAGE);
     process.exit(args.help ? 0 : 2);

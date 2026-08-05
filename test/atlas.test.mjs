@@ -16,7 +16,8 @@ import {
   buildAtlasBlock,
   validateAtlasIds,
   validateGateEdges,
-  coverageReport
+  coverageReport,
+  driftReport
 } from '../src/atlas.mjs';
 
 const CROSSWALK = JSON.parse(
@@ -284,4 +285,87 @@ test('the known STIX/YAML delta is still exactly what we recorded', () => {
     KNOWN_STIX_DELTA.missingFromStix[0].mitigations.slice().sort(),
     ['AML.M0018', 'AML.M0034']
   );
+});
+
+// ---------------------------------------------------------- AC13 – AC14
+// Drift. ATLAS ships releases; a crosswalk that cannot notice is a crosswalk
+// that quietly starts lying.
+
+function laterBundle() {
+  const b = stixBundle();
+  // a new technique appears
+  b.objects.push({
+    type: 'attack-pattern', id: 'x5', name: 'Brand New Agent Technique',
+    external_references: [{ source_name: 'mitre-atlas', external_id: 'AML.T0200' }]
+  });
+  // and MITRE finally publishes a control for the one we had asserted
+  b.objects.push({
+    type: 'relationship', relationship_type: 'mitigates',
+    source_ref: 'x4', target_ref: 'x2'
+  });
+  return b;
+}
+
+test('AC13 drift reports techniques added since the pinned release', () => {
+  const pinned = buildAtlasBlock(stixBundle(), RELEASE);
+  const next = buildAtlasBlock(laterBundle(), { version: '5.7.0', release: 'v2026.07' });
+  const d = driftReport(pinned, next, []);
+  assert.deepEqual(d.added, ['AML.T0200']);
+  assert.deepEqual(d.removed, []);
+});
+
+test('AC13b drift reports techniques removed since the pinned release', () => {
+  const pinned = buildAtlasBlock(laterBundle(), { version: '5.7.0', release: 'v2026.07' });
+  const next = buildAtlasBlock(stixBundle(), RELEASE);
+  const d = driftReport(pinned, next, []);
+  assert.deepEqual(d.removed, ['AML.T0200']);
+});
+
+test('AC13c drift reports a technique that was renamed', () => {
+  const pinned = buildAtlasBlock(stixBundle(), RELEASE);
+  const renamed = stixBundle();
+  renamed.objects.find((o) => o.id === 'x2').name = 'Agent Tool Poisoning (revised)';
+  const next = buildAtlasBlock(renamed, { version: '5.7.0', release: 'v2026.07' });
+  const d = driftReport(pinned, next, []);
+  assert.equal(d.renamed.length, 1);
+  assert.equal(d.renamed[0].id, 'AML.T0110');
+  assert.match(d.renamed[0].to, /revised/);
+});
+
+test('AC14 an asserted edge whose technique gained a mitigation is reported upgradable', () => {
+  const pinned = buildAtlasBlock(stixBundle(), RELEASE);
+  const next = buildAtlasBlock(laterBundle(), { version: '5.7.0', release: 'v2026.07' });
+  const gates = edges({
+    technique: 'AML.T0110', relation: 'raises-cost', class: 'asserted', rationale: REASON
+  });
+  const d = driftReport(pinned, next, gates);
+  assert.equal(d.upgradable.length, 1);
+  assert.equal(d.upgradable[0].technique, 'AML.T0110');
+  assert.deepEqual(d.upgradable[0].mitigations, ['AML.M0032']);
+});
+
+test('AC14b an asserted edge with still no upstream mitigation is not reported', () => {
+  const pinned = buildAtlasBlock(stixBundle(), RELEASE);
+  const next = buildAtlasBlock(stixBundle(), RELEASE);
+  const gates = edges({
+    technique: 'AML.T0110', relation: 'raises-cost', class: 'asserted', rationale: REASON
+  });
+  assert.deepEqual(driftReport(pinned, next, gates).upgradable, []);
+});
+
+test('AC14c drift names both releases being compared', () => {
+  const pinned = buildAtlasBlock(stixBundle(), RELEASE);
+  const next = buildAtlasBlock(laterBundle(), { version: '5.7.0', release: 'v2026.07' });
+  const d = driftReport(pinned, next, []);
+  assert.equal(d.from, 'v2026.06');
+  assert.equal(d.to, 'v2026.07');
+});
+
+test('AC13d comparing a release to itself reports no drift', () => {
+  const b = buildAtlasBlock(stixBundle(), RELEASE);
+  const d = driftReport(b, b, []);
+  assert.deepEqual(d.added, []);
+  assert.deepEqual(d.removed, []);
+  assert.deepEqual(d.renamed, []);
+  assert.deepEqual(d.upgradable, []);
 });
