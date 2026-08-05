@@ -81,6 +81,31 @@ The secret detector on gate 2 requires the **value** to look like a secret, not 
 
 This is an assurance *aid*, not a certification. It tells you where to look. It does not tell you that you are safe.
 
+### Scope of the claims
+
+Read this as the boundary of what a green card means.
+
+- **It reports the presence of controls. It does not detect attacks.** Every
+  framework this maps to describes adversary behaviour at runtime. A build-time
+  audit can only report whether a control that raises the cost of that behaviour
+  is present in the tree.
+- **Coverage is bounded to the framework versions named in the output.** The
+  crosswalk pins the release it was computed against. A newer release may add
+  risks this repo has no opinion about yet.
+- **A gate with no finding is not a gate that passed.** Where the tool has
+  nothing to say, it says so. Silence is not coverage.
+- **Mapping authority is labelled.** Where a mapping is backed by a published
+  standard, it carries that standard's authority. Where it is our own
+  assertion, it says so and gives the reasoning. Do not read the second kind as
+  the first.
+- **This is not security advice**, not an audit, not a certification, and not a
+  substitute for the mature detection tools named at the top of this README.
+  Adopt those.
+- **No warranty.** See [LICENSE](LICENSE). The software is provided as is.
+
+Findings belong to the underlying detectors. Triage decisions belong to the
+operator running it.
+
 ## Dogfood
 
 `.github/workflows/self-audit.yml` runs the tool inside its own CI: the unit suite, an assertion that `leaky-agent` is still caught (if it ever passes, a detector regressed), and a self-audit that emits a receipt. The auditor rides the rails it lays.
