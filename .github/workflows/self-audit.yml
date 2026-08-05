@@ -5,8 +5,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Pinned to commit SHAs, because this tool flags mutable action tags as
+      # a supply-chain finding and its own pipeline should not trip its rule.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with: { node-version: '20' }
 
       # 1. The unit suite is the fixture wall (gate 7, on ourselves).
@@ -22,6 +24,14 @@ jobs:
             exit 1
           fi
           echo "leaky-agent correctly blocked"
+
+      # 3. The ATLAS crosswalk must still validate as committed. This is the
+      #    rule the whole two-class design rests on: an unlabelled edge, an
+      #    asserted edge with no rationale, or an assertion over a technique
+      #    MITRE already mitigates must never reach main. Runs offline against
+      #    the committed block, so it does not depend on MITRE being reachable.
+      - name: validate the ATLAS crosswalk
+        run: node scripts/map-gates.mjs --verify
 
       # 3. Dogfood: the tool runs on its own tree and emits a receipt.
       - name: self-audit

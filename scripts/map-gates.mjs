@@ -17,7 +17,23 @@ const stixPath = process.argv.includes('--stix')
   ? process.argv[process.argv.indexOf('--stix') + 1]
   : new URL('../../stix.json', import.meta.url);
 
-const block = buildAtlasBlock(JSON.parse(readFileSync(stixPath, 'utf8')), RELEASE);
+// --verify validates what is committed, using the ATLAS block already in the
+// crosswalk. No network, no vendored bundle — so CI can enforce the edge rules
+// on every push without depending on MITRE being reachable.
+const VERIFY_ONLY = process.argv.includes('--verify');
+
+const committed = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../crosswalk.v1.json', import.meta.url)), 'utf8')
+);
+
+const block = VERIFY_ONLY
+  ? committed.atlas
+  : buildAtlasBlock(JSON.parse(readFileSync(stixPath, 'utf8')), RELEASE);
+
+if (VERIFY_ONLY && !block) {
+  console.error('  no ATLAS block in crosswalk.v1.json');
+  process.exit(1);
+}
 
 // ---------------------------------------------------------------------------
 // The mapping.
@@ -92,9 +108,11 @@ const MAPPING = {
 // ---------------------------------------------------------------------------
 
 const crosswalkPath = fileURLToPath(new URL('../crosswalk.v1.json', import.meta.url));
-const crosswalk = JSON.parse(readFileSync(crosswalkPath, 'utf8'));
+const crosswalk = committed;
 
-const gates = crosswalk.gates.map((g) => ({ ...g, atlas: MAPPING[g.id] ?? [] }));
+const gates = VERIFY_ONLY
+  ? crosswalk.gates
+  : crosswalk.gates.map((g) => ({ ...g, atlas: MAPPING[g.id] ?? [] }));
 
 // Every AML id we cite must exist in the pinned release.
 const cited = gates.flatMap((g) => g.atlas.map((e) => e.mitigation || e.technique));
