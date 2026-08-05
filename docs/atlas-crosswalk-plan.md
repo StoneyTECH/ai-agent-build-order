@@ -42,12 +42,25 @@ That only works where ATLAS has a mitigation. It frequently does not.
 
 ### The coverage gap, measured
 
-| | count |
-|---|---|
-| techniques total | 170 |
-| techniques with at least one ATLAS mitigation | 75 |
-| **techniques with no mitigation at all** | **95** |
-| unmitigated techniques that are agent/LLM-relevant | 30 |
+| | YAML dist | STIX dist |
+|---|---|---|
+| techniques total | 170 | 170 |
+| mitigation-to-technique edges | 246 | **244** |
+| techniques with at least one mitigation | 75 | 74 |
+| **techniques with no mitigation at all** | **95** | **96** |
+
+The two distributions of the same release disagree. Verified 2026-08-05: the
+STIX bundle is missing both `mitigates` relationships for `AML.T0052.001`
+(Deepfake-Assisted Phishing) — `AML.M0018` and `AML.M0034`. The technique and
+both mitigations are present in STIX; only the relationships are absent, and
+nothing is missing in the other direction.
+
+This repository reads **STIX**, because it has no dependencies and the YAML
+would need a parser. The delta is pinned in `test/atlas.test.mjs` rather than
+left in a comment, so a silent upstream correction fails a test instead of
+quietly moving the coverage numbers.
+
+Roughly 30 of the unmitigated techniques are agent or LLM relevant.
 
 The unmitigated set includes the entire agent-tool supply-chain cluster:
 

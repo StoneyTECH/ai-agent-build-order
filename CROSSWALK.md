@@ -61,9 +61,9 @@ A design for mapping the nine gates to ATLAS is in
 [docs/atlas-crosswalk-plan.md](docs/atlas-crosswalk-plan.md). It is a plan, not
 an implementation.
 
-The finding that makes it worth doing: ATLAS ships 35 mitigations covering 75
-of its 170 techniques, which leaves **95 with no published control** — and 30
-of those are agent or LLM relevant, including the whole agent-tool supply-chain
+The finding that makes it worth doing: ATLAS ships 35 mitigations covering
+roughly 75 of its 170 techniques, which leaves **about 95 with no published
+control** — and 30 of those are agent or LLM relevant, including the whole agent-tool supply-chain
 cluster (`AML.T0104` Publish Poisoned AI Agent Tool, `AML.T0110` AI Agent Tool
 Poisoning, `AML.T0109` AI Supply Chain Rug Pull). MITRE names those attacks and
 publishes no mitigation for them. That gap is where build-time gates have
