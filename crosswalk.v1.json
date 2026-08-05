@@ -3,67 +3,2253 @@
   "generated_from": "CROSSWALK.md",
   "grounding": "primary source only; secondary paraphrases discarded where they disagreed",
   "standards": [
-    { "id": "std:owasp-agentic-2026", "name": "OWASP Top 10 for Agentic Applications 2026", "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/", "canonical": "https://github.com/OWASP/www-project-top-10-for-large-language-model-applications" },
-    { "id": "std:nist-ai-rmf", "name": "NIST AI Risk Management Framework", "url": "https://www.nist.gov/itl/ai-risk-management-framework" },
-    { "id": "std:iso-42001", "name": "ISO/IEC 42001", "url": null }
+    {
+      "id": "std:owasp-agentic-2026",
+      "name": "OWASP Top 10 for Agentic Applications 2026",
+      "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/",
+      "canonical": "https://github.com/OWASP/www-project-top-10-for-large-language-model-applications"
+    },
+    {
+      "id": "std:nist-ai-rmf",
+      "name": "NIST AI Risk Management Framework",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework"
+    },
+    {
+      "id": "std:iso-42001",
+      "name": "ISO/IEC 42001",
+      "url": null
+    },
+    {
+      "id": "std:mitre-atlas",
+      "name": "MITRE ATLAS",
+      "version": "5.6.0",
+      "release": "v2026.06",
+      "url": "https://atlas.mitre.org/",
+      "canonical": "https://github.com/mitre-atlas/atlas-data"
+    }
   ],
   "risks": [
-    { "id": "asi:01", "code": "ASI01", "name": "Agent Goal Hijacking", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:02", "code": "ASI02", "name": "Tool Misuse and Exploitation", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:03", "code": "ASI03", "name": "Identity and Privilege Abuse", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:04", "code": "ASI04", "name": "Agentic Supply-Chain Compromise", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:05", "code": "ASI05", "name": "Unexpected Code Execution", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:06", "code": "ASI06", "name": "Memory and Context Poisoning", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:07", "code": "ASI07", "name": "Insecure Inter-Agent Communication", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:08", "code": "ASI08", "name": "Cascading Failures", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:09", "code": "ASI09", "name": "Human-Agent Trust Exploitation", "standard": "std:owasp-agentic-2026" },
-    { "id": "asi:10", "code": "ASI10", "name": "Rogue Agents", "standard": "std:owasp-agentic-2026" }
+    {
+      "id": "asi:01",
+      "code": "ASI01",
+      "name": "Agent Goal Hijacking",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:02",
+      "code": "ASI02",
+      "name": "Tool Misuse and Exploitation",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:03",
+      "code": "ASI03",
+      "name": "Identity and Privilege Abuse",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:04",
+      "code": "ASI04",
+      "name": "Agentic Supply-Chain Compromise",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:05",
+      "code": "ASI05",
+      "name": "Unexpected Code Execution",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:06",
+      "code": "ASI06",
+      "name": "Memory and Context Poisoning",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:07",
+      "code": "ASI07",
+      "name": "Insecure Inter-Agent Communication",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:08",
+      "code": "ASI08",
+      "name": "Cascading Failures",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:09",
+      "code": "ASI09",
+      "name": "Human-Agent Trust Exploitation",
+      "standard": "std:owasp-agentic-2026"
+    },
+    {
+      "id": "asi:10",
+      "code": "ASI10",
+      "name": "Rogue Agents",
+      "standard": "std:owasp-agentic-2026"
+    }
   ],
   "rungs": [
-    { "id": "rung:supply-admission", "name": "Build-time admission (CI + code)" },
-    { "id": "rung:identity", "name": "Identity / policy, in code" },
-    { "id": "rung:policy-gate", "name": "Gate / policy-as-code" },
-    { "id": "rung:retrieval-validation", "name": "Retrieval + code validation" },
-    { "id": "rung:typed-contract", "name": "Typed contract, in code" },
-    { "id": "rung:code-eval", "name": "Code + eval" },
-    { "id": "rung:hard-gate", "name": "Gate — hard stop in code" },
-    { "id": "rung:eval-ci", "name": "Eval / CI" },
-    { "id": "rung:recovery", "name": "Gate + human escalation" }
+    {
+      "id": "rung:supply-admission",
+      "name": "Build-time admission (CI + code)"
+    },
+    {
+      "id": "rung:identity",
+      "name": "Identity / policy, in code"
+    },
+    {
+      "id": "rung:policy-gate",
+      "name": "Gate / policy-as-code"
+    },
+    {
+      "id": "rung:retrieval-validation",
+      "name": "Retrieval + code validation"
+    },
+    {
+      "id": "rung:typed-contract",
+      "name": "Typed contract, in code"
+    },
+    {
+      "id": "rung:code-eval",
+      "name": "Code + eval"
+    },
+    {
+      "id": "rung:hard-gate",
+      "name": "Gate — hard stop in code"
+    },
+    {
+      "id": "rung:eval-ci",
+      "name": "Eval / CI"
+    },
+    {
+      "id": "rung:recovery",
+      "name": "Gate + human escalation"
+    }
   ],
   "tools": [
-    { "id": "tool:snyk-agent-scan", "name": "Snyk agent-scan", "url": "https://github.com/snyk/agent-scan", "does": "MCP discovery; tool poisoning, shadowing, toxic flows" },
-    { "id": "tool:agent-audit", "name": "agent-audit", "url": "https://github.com/HeadyZhang/agent-audit", "does": "72 rules mapped to all ten ASI, AST tool-boundary taint tracking, MIT" },
-    { "id": "tool:agentauditkit", "name": "AgentAuditKit", "url": null, "does": "225 rules, SARIF, evidence mapped to 13 compliance frameworks" },
-    { "id": "tool:mcp-audit", "name": "mcp-audit", "url": "https://github.com/apisec-inc/mcp-audit", "does": "MCP config, cross-server attack paths, AI-BOM" },
-    { "id": "tool:sbom", "name": "SBOM / AI-BOM (CycloneDX)", "url": null, "does": "dependency + model inventory" },
-    { "id": "tool:opa", "name": "Policy-as-code (OPA)", "url": null, "does": "deny-by-default scope enforcement" },
-    { "id": "tool:iam", "name": "Cloud IAM / workload identity", "url": null, "does": "per-agent identity" },
-    { "id": "tool:sandbox", "name": "Sandboxing (microVM / gVisor)", "url": null, "does": "code-execution isolation" },
-    { "id": "tool:deepteam", "name": "DeepTeam", "url": "https://www.trydeepteam.com/docs/frameworks-owasp-top-10-for-agentic-applications", "does": "LLM red-team eval mapped to OWASP Agentic" }
+    {
+      "id": "tool:snyk-agent-scan",
+      "name": "Snyk agent-scan",
+      "url": "https://github.com/snyk/agent-scan",
+      "does": "MCP discovery; tool poisoning, shadowing, toxic flows"
+    },
+    {
+      "id": "tool:agent-audit",
+      "name": "agent-audit",
+      "url": "https://github.com/HeadyZhang/agent-audit",
+      "does": "72 rules mapped to all ten ASI, AST tool-boundary taint tracking, MIT"
+    },
+    {
+      "id": "tool:agentauditkit",
+      "name": "AgentAuditKit",
+      "url": null,
+      "does": "225 rules, SARIF, evidence mapped to 13 compliance frameworks"
+    },
+    {
+      "id": "tool:mcp-audit",
+      "name": "mcp-audit",
+      "url": "https://github.com/apisec-inc/mcp-audit",
+      "does": "MCP config, cross-server attack paths, AI-BOM"
+    },
+    {
+      "id": "tool:sbom",
+      "name": "SBOM / AI-BOM (CycloneDX)",
+      "url": null,
+      "does": "dependency + model inventory"
+    },
+    {
+      "id": "tool:opa",
+      "name": "Policy-as-code (OPA)",
+      "url": null,
+      "does": "deny-by-default scope enforcement"
+    },
+    {
+      "id": "tool:iam",
+      "name": "Cloud IAM / workload identity",
+      "url": null,
+      "does": "per-agent identity"
+    },
+    {
+      "id": "tool:sandbox",
+      "name": "Sandboxing (microVM / gVisor)",
+      "url": null,
+      "does": "code-execution isolation"
+    },
+    {
+      "id": "tool:deepteam",
+      "name": "DeepTeam",
+      "url": "https://www.trydeepteam.com/docs/frameworks-owasp-top-10-for-agentic-applications",
+      "does": "LLM red-team eval mapped to OWASP Agentic"
+    }
   ],
   "gates": [
-    { "id": "gate:1", "n": 1, "key": "supply-chain", "title": "Vet the supply chain", "rung": "rung:supply-admission", "closes": ["asi:04"], "supports": ["asi:06"], "enforced_by": ["tool:sbom", "tool:mcp-audit", "tool:snyk-agent-scan"], "buildbuy": "adopt SBOM + dependency scanning; author the approval policy" },
-    { "id": "gate:2", "n": 2, "key": "operator", "title": "Name the operator", "rung": "rung:identity", "closes": ["asi:03"], "supports": ["asi:09", "asi:10"], "enforced_by": ["tool:iam"], "buildbuy": "adopt — identity is solved; carry no static keys" },
-    { "id": "gate:3", "n": 3, "key": "scope", "title": "Draw the scope, deny by default", "rung": "rung:policy-gate", "closes": ["asi:02", "asi:03"], "supports": [], "enforced_by": ["tool:opa", "tool:snyk-agent-scan", "tool:mcp-audit"], "buildbuy": "adopt engine, author the policy" },
-    { "id": "gate:4", "n": 4, "key": "evidence", "title": "Classify the evidence", "rung": "rung:retrieval-validation", "closes": ["asi:06", "asi:01"], "supports": ["asi:02"], "enforced_by": ["tool:agent-audit", "tool:snyk-agent-scan"], "buildbuy": "buy detection, build the provenance rule" },
-    { "id": "gate:5", "n": 5, "key": "tools", "title": "Type the tools", "rung": "rung:typed-contract", "closes": ["asi:02", "asi:05", "asi:07"], "supports": [], "enforced_by": ["tool:agent-audit"], "buildbuy": "build the contracts, buy the taint scanner" },
-    { "id": "gate:6", "n": 6, "key": "receipts", "title": "Define done, keep the receipt", "rung": "rung:code-eval", "closes": ["asi:10", "asi:08", "asi:09"], "supports": [], "enforced_by": ["tool:mcp-audit"], "buildbuy": "adopt logging, define the receipt schema" },
-    { "id": "gate:7", "n": 7, "key": "never-states", "title": "Gate the never-states", "rung": "rung:hard-gate", "closes": ["asi:05", "asi:02", "asi:08"], "supports": [], "enforced_by": ["tool:sandbox", "tool:agent-audit"], "buildbuy": "adopt sandbox, author the never-states" },
-    { "id": "gate:8", "n": 8, "key": "fixtures", "title": "Turn failures into fixtures", "rung": "rung:eval-ci", "closes": ["asi:08"], "supports": [], "enforced_by": ["tool:deepteam"], "buildbuy": "adopt the harness, build the corpus" },
-    { "id": "gate:9", "n": 9, "key": "way-home", "title": "Build the way home", "rung": "rung:recovery", "closes": ["asi:08", "asi:10", "asi:09"], "supports": [], "enforced_by": [], "buildbuy": "build the recovery path, adopt the primitives" }
+    {
+      "id": "gate:1",
+      "n": 1,
+      "key": "supply-chain",
+      "title": "Vet the supply chain",
+      "rung": "rung:supply-admission",
+      "closes": [
+        "asi:04"
+      ],
+      "supports": [
+        "asi:06"
+      ],
+      "enforced_by": [
+        "tool:sbom",
+        "tool:mcp-audit",
+        "tool:snyk-agent-scan"
+      ],
+      "buildbuy": "adopt SBOM + dependency scanning; author the approval policy",
+      "atlas": [
+        {
+          "mitigation": "AML.M0023",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0016",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0014",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "technique": "AML.T0104",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "Admission control over tool packages means a published poisoned tool must clear a signed provenance check and an SBOM entry before it becomes callable. It does not stop publication; it stops adoption without a recorded decision."
+        },
+        {
+          "technique": "AML.T0110",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "Dependency scanning and a written approval policy mean a tool that changes behaviour after adoption surfaces as a diff against the recorded SBOM rather than as silent drift."
+        },
+        {
+          "technique": "AML.T0109",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "Pinning to immutable versions or digests rather than mutable tags removes the mechanism a rug pull depends on: repointing a name that was already reviewed under different content."
+        },
+        {
+          "technique": "AML.T0011.002",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "A poisoned tool entering through the dependency tree is caught by the same admission gate as any other component, because the gate keys on provenance rather than on whether the artifact is an agent tool."
+        }
+      ]
+    },
+    {
+      "id": "gate:2",
+      "n": 2,
+      "key": "operator",
+      "title": "Name the operator",
+      "rung": "rung:identity",
+      "closes": [
+        "asi:03"
+      ],
+      "supports": [
+        "asi:09",
+        "asi:10"
+      ],
+      "enforced_by": [
+        "tool:iam"
+      ],
+      "buildbuy": "adopt — identity is solved; carry no static keys",
+      "atlas": [
+        {
+          "mitigation": "AML.M0027",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0026",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0019",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        }
+      ]
+    },
+    {
+      "id": "gate:3",
+      "n": 3,
+      "key": "scope",
+      "title": "Draw the scope, deny by default",
+      "rung": "rung:policy-gate",
+      "closes": [
+        "asi:02",
+        "asi:03"
+      ],
+      "supports": [],
+      "enforced_by": [
+        "tool:opa",
+        "tool:snyk-agent-scan",
+        "tool:mcp-audit"
+      ],
+      "buildbuy": "adopt engine, author the policy",
+      "atlas": [
+        {
+          "mitigation": "AML.M0028",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0032",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0005",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "technique": "AML.T0034.002",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "A deny-by-default scope with an explicit ceiling bounds what an agent can consume before a human is asked, which converts unbounded resource consumption into a refusal at a stated limit."
+        }
+      ]
+    },
+    {
+      "id": "gate:4",
+      "n": 4,
+      "key": "evidence",
+      "title": "Classify the evidence",
+      "rung": "rung:retrieval-validation",
+      "closes": [
+        "asi:06",
+        "asi:01"
+      ],
+      "supports": [
+        "asi:02"
+      ],
+      "enforced_by": [
+        "tool:agent-audit",
+        "tool:snyk-agent-scan"
+      ],
+      "buildbuy": "buy detection, build the provenance rule",
+      "atlas": [
+        {
+          "mitigation": "AML.M0025",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0030",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        }
+      ]
+    },
+    {
+      "id": "gate:5",
+      "n": 5,
+      "key": "tools",
+      "title": "Type the tools",
+      "rung": "rung:typed-contract",
+      "closes": [
+        "asi:02",
+        "asi:05",
+        "asi:07"
+      ],
+      "supports": [],
+      "enforced_by": [
+        "tool:agent-audit"
+      ],
+      "buildbuy": "build the contracts, buy the taint scanner",
+      "atlas": [
+        {
+          "mitigation": "AML.M0033",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "technique": "AML.T0084.001",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "Typed tool contracts published from source mean a tool definition discovered by an adversary reveals only the schema already intended to be public, and any capability outside that schema is not reachable through the contract."
+        },
+        {
+          "technique": "AML.T0099",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "A typed contract validates tool output against a declared schema before it re-enters the agent, so poisoned data must survive structural validation rather than arriving as free text the model will trust."
+        },
+        {
+          "technique": "AML.T0010.005",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "Tools reachable only through a declared, typed contract cannot be invoked as an ambient capability, which removes the implicit-authority path this technique relies on."
+        },
+        {
+          "technique": "AML.T0084.003",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "When each tool call is typed and logged individually, a chain of calls is enumerable after the fact rather than opaque, so an unexpected call sequence is visible in the receipt."
+        }
+      ]
+    },
+    {
+      "id": "gate:6",
+      "n": 6,
+      "key": "receipts",
+      "title": "Define done, keep the receipt",
+      "rung": "rung:code-eval",
+      "closes": [
+        "asi:10",
+        "asi:08",
+        "asi:09"
+      ],
+      "supports": [],
+      "enforced_by": [
+        "tool:mcp-audit"
+      ],
+      "buildbuy": "adopt logging, define the receipt schema",
+      "atlas": [
+        {
+          "mitigation": "AML.M0024",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "technique": "AML.T0103",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "A receipt schema that records which agent ran, under whose authority, and against what definition of done makes an unauthorised agent deployment an absence in the ledger rather than an indistinguishable run."
+        }
+      ]
+    },
+    {
+      "id": "gate:7",
+      "n": 7,
+      "key": "never-states",
+      "title": "Gate the never-states",
+      "rung": "rung:hard-gate",
+      "closes": [
+        "asi:05",
+        "asi:02",
+        "asi:08"
+      ],
+      "supports": [],
+      "enforced_by": [
+        "tool:sandbox",
+        "tool:agent-audit"
+      ],
+      "buildbuy": "adopt sandbox, author the never-states",
+      "atlas": [
+        {
+          "mitigation": "AML.M0029",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "mitigation": "AML.M0020",
+          "relation": "implements",
+          "class": "mitigation-backed"
+        },
+        {
+          "technique": "AML.T0002.002",
+          "relation": "raises-cost",
+          "class": "asserted",
+          "rationale": "Never-states expressed as code rather than as instructions cannot be edited by changing agent configuration, so a modified configuration still meets a hard stop the configuration does not control."
+        }
+      ]
+    },
+    {
+      "id": "gate:8",
+      "n": 8,
+      "key": "fixtures",
+      "title": "Turn failures into fixtures",
+      "rung": "rung:eval-ci",
+      "closes": [
+        "asi:08"
+      ],
+      "supports": [],
+      "enforced_by": [
+        "tool:deepteam"
+      ],
+      "buildbuy": "adopt the harness, build the corpus",
+      "atlas": []
+    },
+    {
+      "id": "gate:9",
+      "n": 9,
+      "key": "way-home",
+      "title": "Build the way home",
+      "rung": "rung:recovery",
+      "closes": [
+        "asi:08",
+        "asi:10",
+        "asi:09"
+      ],
+      "supports": [],
+      "enforced_by": [],
+      "buildbuy": "build the recovery path, adopt the primitives",
+      "atlas": []
+    }
   ],
   "sequence": [
-    { "from": "gate:2", "rel": "depends_on", "to": "gate:1" },
-    { "from": "gate:3", "rel": "depends_on", "to": "gate:2" },
-    { "from": "gate:4", "rel": "depends_on", "to": "gate:3" },
-    { "from": "gate:5", "rel": "depends_on", "to": "gate:4" },
-    { "from": "gate:6", "rel": "depends_on", "to": "gate:5" },
-    { "from": "gate:7", "rel": "depends_on", "to": "gate:6" },
-    { "from": "gate:8", "rel": "depends_on", "to": "gate:7" },
-    { "from": "gate:9", "rel": "depends_on", "to": "gate:8" }
+    {
+      "from": "gate:2",
+      "rel": "depends_on",
+      "to": "gate:1"
+    },
+    {
+      "from": "gate:3",
+      "rel": "depends_on",
+      "to": "gate:2"
+    },
+    {
+      "from": "gate:4",
+      "rel": "depends_on",
+      "to": "gate:3"
+    },
+    {
+      "from": "gate:5",
+      "rel": "depends_on",
+      "to": "gate:4"
+    },
+    {
+      "from": "gate:6",
+      "rel": "depends_on",
+      "to": "gate:5"
+    },
+    {
+      "from": "gate:7",
+      "rel": "depends_on",
+      "to": "gate:6"
+    },
+    {
+      "from": "gate:8",
+      "rel": "depends_on",
+      "to": "gate:7"
+    },
+    {
+      "from": "gate:9",
+      "rel": "depends_on",
+      "to": "gate:8"
+    }
   ],
   "coverage_gaps": [
-    { "risk": "asi:07", "coverage": "partial", "gate": "gate:5", "note": "inter-agent message trust, replay, impersonation under-served; strengthen with signed typed inter-agent contracts before going multi-agent" },
-    { "risk": "asi:09", "coverage": "partial", "gate": "gate:6", "note": "human over-reliance is a presentation-layer risk; needs surfaced provenance, confidence, and refusal that build-time gates do not reach" }
-  ]
+    {
+      "risk": "asi:07",
+      "coverage": "partial",
+      "gate": "gate:5",
+      "note": "inter-agent message trust, replay, impersonation under-served; strengthen with signed typed inter-agent contracts before going multi-agent"
+    },
+    {
+      "risk": "asi:09",
+      "coverage": "partial",
+      "gate": "gate:6",
+      "note": "human over-reliance is a presentation-layer risk; needs surfaced provenance, confidence, and refusal that build-time gates do not reach"
+    }
+  ],
+  "atlas": {
+    "source": "mitre-atlas/atlas-navigator-data",
+    "version": "5.6.0",
+    "release": "v2026.06",
+    "tactics": [
+      {
+        "id": "AML.TA0000",
+        "name": "AI Model Access"
+      },
+      {
+        "id": "AML.TA0001",
+        "name": "AI Attack Staging"
+      },
+      {
+        "id": "AML.TA0002",
+        "name": "Reconnaissance"
+      },
+      {
+        "id": "AML.TA0003",
+        "name": "Resource Development"
+      },
+      {
+        "id": "AML.TA0004",
+        "name": "Initial Access"
+      },
+      {
+        "id": "AML.TA0005",
+        "name": "Execution"
+      },
+      {
+        "id": "AML.TA0006",
+        "name": "Persistence"
+      },
+      {
+        "id": "AML.TA0007",
+        "name": "Defense Evasion"
+      },
+      {
+        "id": "AML.TA0008",
+        "name": "Discovery"
+      },
+      {
+        "id": "AML.TA0009",
+        "name": "Collection"
+      },
+      {
+        "id": "AML.TA0010",
+        "name": "Exfiltration"
+      },
+      {
+        "id": "AML.TA0011",
+        "name": "Impact"
+      },
+      {
+        "id": "AML.TA0012",
+        "name": "Privilege Escalation"
+      },
+      {
+        "id": "AML.TA0013",
+        "name": "Credential Access"
+      },
+      {
+        "id": "AML.TA0014",
+        "name": "Command and Control"
+      },
+      {
+        "id": "AML.TA0015",
+        "name": "Lateral Movement"
+      }
+    ],
+    "techniques": [
+      {
+        "id": "AML.T0000",
+        "name": "Search Open Technical Databases",
+        "mitigations": [
+          "AML.M0000"
+        ]
+      },
+      {
+        "id": "AML.T0000.000",
+        "name": "Journals and Conference Proceedings",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0000.001",
+        "name": "Pre-Print Repositories",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0000.002",
+        "name": "Technical Blogs",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0001",
+        "name": "Search Open AI Vulnerability Analysis",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0002",
+        "name": "Acquire Public AI Artifacts",
+        "mitigations": [
+          "AML.M0000"
+        ]
+      },
+      {
+        "id": "AML.T0002.000",
+        "name": "Datasets",
+        "mitigations": [
+          "AML.M0001"
+        ]
+      },
+      {
+        "id": "AML.T0002.001",
+        "name": "Models",
+        "mitigations": [
+          "AML.M0001",
+          "AML.M0014"
+        ]
+      },
+      {
+        "id": "AML.T0002.002",
+        "name": "AI Agent Configuration",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0003",
+        "name": "Search Victim-Owned Websites",
+        "mitigations": [
+          "AML.M0000"
+        ]
+      },
+      {
+        "id": "AML.T0004",
+        "name": "Search Application Repositories",
+        "mitigations": [
+          "AML.M0000"
+        ]
+      },
+      {
+        "id": "AML.T0005",
+        "name": "Create Proxy AI Model",
+        "mitigations": [
+          "AML.M0000",
+          "AML.M0001",
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0005.000",
+        "name": "Train Proxy via Gathered AI Artifacts",
+        "mitigations": [
+          "AML.M0000",
+          "AML.M0001"
+        ]
+      },
+      {
+        "id": "AML.T0005.001",
+        "name": "Train Proxy via Replication",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0005.002",
+        "name": "Use Pre-Trained Model",
+        "mitigations": [
+          "AML.M0000"
+        ]
+      },
+      {
+        "id": "AML.T0006",
+        "name": "Active Scanning",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0007",
+        "name": "Discover AI Artifacts",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0012"
+        ]
+      },
+      {
+        "id": "AML.T0008",
+        "name": "Acquire Infrastructure",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0008.000",
+        "name": "AI Development Workspaces",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0008.001",
+        "name": "Consumer Hardware",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0008.002",
+        "name": "Domains",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0008.003",
+        "name": "Physical Countermeasures",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0008.004",
+        "name": "Serverless",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0008.005",
+        "name": "AI Service Proxies",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0010",
+        "name": "AI Supply Chain Compromise",
+        "mitigations": [
+          "AML.M0014",
+          "AML.M0020",
+          "AML.M0023"
+        ]
+      },
+      {
+        "id": "AML.T0010.000",
+        "name": "Hardware",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0010.001",
+        "name": "AI Software",
+        "mitigations": [
+          "AML.M0006",
+          "AML.M0013"
+        ]
+      },
+      {
+        "id": "AML.T0010.002",
+        "name": "Data",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0007",
+          "AML.M0014",
+          "AML.M0025"
+        ]
+      },
+      {
+        "id": "AML.T0010.003",
+        "name": "Model",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0006",
+          "AML.M0008",
+          "AML.M0013",
+          "AML.M0017"
+        ]
+      },
+      {
+        "id": "AML.T0010.004",
+        "name": "Container Registry",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0010.005",
+        "name": "AI Agent Tool",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0011",
+        "name": "User Execution",
+        "mitigations": [
+          "AML.M0011",
+          "AML.M0014",
+          "AML.M0016",
+          "AML.M0018",
+          "AML.M0023"
+        ]
+      },
+      {
+        "id": "AML.T0011.000",
+        "name": "Unsafe AI Artifacts",
+        "mitigations": [
+          "AML.M0011",
+          "AML.M0013",
+          "AML.M0014",
+          "AML.M0016",
+          "AML.M0018",
+          "AML.M0023"
+        ]
+      },
+      {
+        "id": "AML.T0011.001",
+        "name": "Malicious Package",
+        "mitigations": [
+          "AML.M0011",
+          "AML.M0013",
+          "AML.M0016",
+          "AML.M0018",
+          "AML.M0023"
+        ]
+      },
+      {
+        "id": "AML.T0011.002",
+        "name": "Poisoned AI Agent Tool",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0011.003",
+        "name": "Malicious Link",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0012",
+        "name": "Valid Accounts",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0013",
+        "name": "Discover AI Model Ontology",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004"
+        ]
+      },
+      {
+        "id": "AML.T0014",
+        "name": "Discover AI Model Family",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0006"
+        ]
+      },
+      {
+        "id": "AML.T0015",
+        "name": "Evade AI Model",
+        "mitigations": [
+          "AML.M0003",
+          "AML.M0006",
+          "AML.M0009",
+          "AML.M0010",
+          "AML.M0015",
+          "AML.M0034"
+        ]
+      },
+      {
+        "id": "AML.T0016",
+        "name": "Obtain Capabilities",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0016.000",
+        "name": "Adversarial AI Attack Implementations",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0016.001",
+        "name": "Software Tools",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0016.002",
+        "name": "Generative AI",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0017",
+        "name": "Develop Capabilities",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0017.000",
+        "name": "Adversarial AI Attacks",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0018",
+        "name": "Manipulate AI Model",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0008",
+          "AML.M0013"
+        ]
+      },
+      {
+        "id": "AML.T0018.000",
+        "name": "Poison AI Model",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0007",
+          "AML.M0008",
+          "AML.M0013",
+          "AML.M0025"
+        ]
+      },
+      {
+        "id": "AML.T0018.001",
+        "name": "Modify AI Model Architecture",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0008",
+          "AML.M0013"
+        ]
+      },
+      {
+        "id": "AML.T0018.002",
+        "name": "Embed Malware",
+        "mitigations": [
+          "AML.M0013"
+        ]
+      },
+      {
+        "id": "AML.T0019",
+        "name": "Publish Poisoned Datasets",
+        "mitigations": [
+          "AML.M0014",
+          "AML.M0023",
+          "AML.M0025"
+        ]
+      },
+      {
+        "id": "AML.T0020",
+        "name": "Poison Training Data",
+        "mitigations": [
+          "AML.M0001",
+          "AML.M0005",
+          "AML.M0007",
+          "AML.M0008",
+          "AML.M0023",
+          "AML.M0025"
+        ]
+      },
+      {
+        "id": "AML.T0021",
+        "name": "Establish Accounts",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0024",
+        "name": "Exfiltration via AI Inference API",
+        "mitigations": [
+          "AML.M0004",
+          "AML.M0019",
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0024.000",
+        "name": "Infer Training Data Membership",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0024.001",
+        "name": "Invert AI Model",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0024.002",
+        "name": "Extract AI Model",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0025",
+        "name": "Exfiltration via Cyber Means",
+        "mitigations": [
+          "AML.M0005"
+        ]
+      },
+      {
+        "id": "AML.T0029",
+        "name": "Denial of AI Service",
+        "mitigations": [
+          "AML.M0004",
+          "AML.M0015",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0031",
+        "name": "Erode AI Model Integrity",
+        "mitigations": [
+          "AML.M0003",
+          "AML.M0006",
+          "AML.M0010",
+          "AML.M0015"
+        ]
+      },
+      {
+        "id": "AML.T0034",
+        "name": "Cost Harvesting",
+        "mitigations": [
+          "AML.M0004",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0034.000",
+        "name": "Excessive Queries",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0034.001",
+        "name": "Resource-Intensive Queries",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0034.002",
+        "name": "Agentic Resource Consumption",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0035",
+        "name": "AI Artifact Collection",
+        "mitigations": [
+          "AML.M0001",
+          "AML.M0005",
+          "AML.M0012",
+          "AML.M0017"
+        ]
+      },
+      {
+        "id": "AML.T0036",
+        "name": "Data from Information Repositories",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0037",
+        "name": "Data from Local System",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0040",
+        "name": "AI Model Inference API Access",
+        "mitigations": [
+          "AML.M0019",
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0041",
+        "name": "Physical Environment Access",
+        "mitigations": [
+          "AML.M0009"
+        ]
+      },
+      {
+        "id": "AML.T0042",
+        "name": "Verify Attack",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0004",
+          "AML.M0005",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0043",
+        "name": "Craft Adversarial Data",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0003",
+          "AML.M0004",
+          "AML.M0006",
+          "AML.M0008",
+          "AML.M0010",
+          "AML.M0015",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0043.000",
+        "name": "White-Box Optimization",
+        "mitigations": [
+          "AML.M0003",
+          "AML.M0005",
+          "AML.M0006",
+          "AML.M0010",
+          "AML.M0015",
+          "AML.M0017"
+        ]
+      },
+      {
+        "id": "AML.T0043.001",
+        "name": "Black-Box Optimization",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0003",
+          "AML.M0004",
+          "AML.M0006",
+          "AML.M0010",
+          "AML.M0015",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0043.002",
+        "name": "Black-Box Transfer",
+        "mitigations": [
+          "AML.M0003",
+          "AML.M0006",
+          "AML.M0010",
+          "AML.M0015"
+        ]
+      },
+      {
+        "id": "AML.T0043.003",
+        "name": "Manual Modification",
+        "mitigations": [
+          "AML.M0003",
+          "AML.M0004",
+          "AML.M0006",
+          "AML.M0010",
+          "AML.M0015"
+        ]
+      },
+      {
+        "id": "AML.T0043.004",
+        "name": "Insert Backdoor Trigger",
+        "mitigations": [
+          "AML.M0003",
+          "AML.M0006",
+          "AML.M0008",
+          "AML.M0010",
+          "AML.M0015"
+        ]
+      },
+      {
+        "id": "AML.T0044",
+        "name": "Full AI Model Access",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0017"
+        ]
+      },
+      {
+        "id": "AML.T0046",
+        "name": "Spamming AI System with Chaff Data",
+        "mitigations": [
+          "AML.M0004",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0047",
+        "name": "AI-Enabled Product or Service",
+        "mitigations": [
+          "AML.M0024"
+        ]
+      },
+      {
+        "id": "AML.T0048",
+        "name": "External Harms",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0048.000",
+        "name": "Financial Harm",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0048.001",
+        "name": "Reputational Harm",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0048.002",
+        "name": "Societal Harm",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0048.003",
+        "name": "User Harm",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0048.004",
+        "name": "AI Intellectual Property Theft",
+        "mitigations": [
+          "AML.M0005",
+          "AML.M0012",
+          "AML.M0017"
+        ]
+      },
+      {
+        "id": "AML.T0049",
+        "name": "Exploit Public-Facing Application",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0050",
+        "name": "Command and Scripting Interpreter",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0051",
+        "name": "LLM Prompt Injection",
+        "mitigations": [
+          "AML.M0019",
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022",
+          "AML.M0024",
+          "AML.M0033"
+        ]
+      },
+      {
+        "id": "AML.T0051.000",
+        "name": "Direct",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0033"
+        ]
+      },
+      {
+        "id": "AML.T0051.001",
+        "name": "Indirect",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0033"
+        ]
+      },
+      {
+        "id": "AML.T0051.002",
+        "name": "Triggered",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0033"
+        ]
+      },
+      {
+        "id": "AML.T0052",
+        "name": "Phishing",
+        "mitigations": [
+          "AML.M0018",
+          "AML.M0034"
+        ]
+      },
+      {
+        "id": "AML.T0052.000",
+        "name": "Spearphishing via Social Engineering LLM",
+        "mitigations": [
+          "AML.M0018",
+          "AML.M0034"
+        ]
+      },
+      {
+        "id": "AML.T0052.001",
+        "name": "Deepfake-Assisted Phishing",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0053",
+        "name": "AI Agent Tool Invocation",
+        "mitigations": [
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022",
+          "AML.M0024",
+          "AML.M0026",
+          "AML.M0027",
+          "AML.M0028",
+          "AML.M0029",
+          "AML.M0030",
+          "AML.M0032",
+          "AML.M0033"
+        ]
+      },
+      {
+        "id": "AML.T0054",
+        "name": "LLM Jailbreak",
+        "mitigations": [
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022"
+        ]
+      },
+      {
+        "id": "AML.T0055",
+        "name": "Unsecured Credentials",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0056",
+        "name": "Extract LLM System Prompt",
+        "mitigations": [
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022"
+        ]
+      },
+      {
+        "id": "AML.T0057",
+        "name": "LLM Data Leakage",
+        "mitigations": [
+          "AML.M0008",
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022"
+        ]
+      },
+      {
+        "id": "AML.T0058",
+        "name": "Publish Poisoned Models",
+        "mitigations": [
+          "AML.M0023"
+        ]
+      },
+      {
+        "id": "AML.T0059",
+        "name": "Erode Dataset Integrity",
+        "mitigations": [
+          "AML.M0007",
+          "AML.M0025"
+        ]
+      },
+      {
+        "id": "AML.T0060",
+        "name": "Publish Hallucinated Entities",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0061",
+        "name": "LLM Prompt Self-Replication",
+        "mitigations": [
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022"
+        ]
+      },
+      {
+        "id": "AML.T0062",
+        "name": "Discover LLM Hallucinations",
+        "mitigations": [
+          "AML.M0004",
+          "AML.M0020",
+          "AML.M0021",
+          "AML.M0022"
+        ]
+      },
+      {
+        "id": "AML.T0063",
+        "name": "Discover AI Model Outputs",
+        "mitigations": [
+          "AML.M0002",
+          "AML.M0012",
+          "AML.M0017",
+          "AML.M0019"
+        ]
+      },
+      {
+        "id": "AML.T0064",
+        "name": "Gather RAG-Indexed Targets",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0065",
+        "name": "LLM Prompt Crafting",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0066",
+        "name": "Retrieval Content Crafting",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0067",
+        "name": "LLM Trusted Output Components Manipulation",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0067.000",
+        "name": "Citations",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0068",
+        "name": "LLM Prompt Obfuscation",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0069",
+        "name": "Discover LLM System Information",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0069.000",
+        "name": "Special Character Sets",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0069.001",
+        "name": "System Instruction Keywords",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0069.002",
+        "name": "System Prompt",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0070",
+        "name": "RAG Poisoning",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0071",
+        "name": "False RAG Entry Injection",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0072",
+        "name": "Reverse Shell",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0073",
+        "name": "Impersonation",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0074",
+        "name": "Masquerading",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0075",
+        "name": "Cloud Service Discovery",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0076",
+        "name": "Corrupt AI Model",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0077",
+        "name": "LLM Response Rendering",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0078",
+        "name": "Drive-by Compromise",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0079",
+        "name": "Stage Capabilities",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0080",
+        "name": "AI Agent Context Poisoning",
+        "mitigations": [
+          "AML.M0031"
+        ]
+      },
+      {
+        "id": "AML.T0080.000",
+        "name": "Memory",
+        "mitigations": [
+          "AML.M0031"
+        ]
+      },
+      {
+        "id": "AML.T0080.001",
+        "name": "Thread",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0081",
+        "name": "Modify AI Agent Configuration",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0082",
+        "name": "RAG Credential Harvesting",
+        "mitigations": [
+          "AML.M0026",
+          "AML.M0027"
+        ]
+      },
+      {
+        "id": "AML.T0083",
+        "name": "Credentials from AI Agent Configuration",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0084",
+        "name": "Discover AI Agent Configuration",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0084.000",
+        "name": "Embedded Knowledge",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0084.001",
+        "name": "Tool Definitions",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0084.002",
+        "name": "Activation Triggers",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0084.003",
+        "name": "Call Chains",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0085",
+        "name": "Data from AI Services",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0026",
+          "AML.M0027",
+          "AML.M0028",
+          "AML.M0032"
+        ]
+      },
+      {
+        "id": "AML.T0085.000",
+        "name": "RAG Databases",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0026",
+          "AML.M0027",
+          "AML.M0032"
+        ]
+      },
+      {
+        "id": "AML.T0085.001",
+        "name": "AI Agent Tools",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0026",
+          "AML.M0027",
+          "AML.M0028",
+          "AML.M0032"
+        ]
+      },
+      {
+        "id": "AML.T0086",
+        "name": "Exfiltration via AI Agent Tool Invocation",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0026",
+          "AML.M0027",
+          "AML.M0028",
+          "AML.M0029",
+          "AML.M0030",
+          "AML.M0032",
+          "AML.M0033"
+        ]
+      },
+      {
+        "id": "AML.T0087",
+        "name": "Gather Victim Identity Information",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0088",
+        "name": "Generate Deepfakes",
+        "mitigations": [
+          "AML.M0009",
+          "AML.M0034"
+        ]
+      },
+      {
+        "id": "AML.T0089",
+        "name": "Process Discovery",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0090",
+        "name": "OS Credential Dumping",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0091",
+        "name": "Use Alternate Authentication Material",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0091.000",
+        "name": "Application Access Token",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0092",
+        "name": "Manipulate User LLM Chat History",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0093",
+        "name": "Prompt Infiltration via Public-Facing Application",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0094",
+        "name": "Delay Execution of LLM Instructions",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0095",
+        "name": "Search Open Websites/Domains",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0095.000",
+        "name": "Code Repositories",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0096",
+        "name": "AI Service API",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0097",
+        "name": "Virtualization/Sandbox Evasion",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0098",
+        "name": "AI Agent Tool Credential Harvesting",
+        "mitigations": [
+          "AML.M0032"
+        ]
+      },
+      {
+        "id": "AML.T0099",
+        "name": "AI Agent Tool Data Poisoning",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0100",
+        "name": "AI Agent Clickbait",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0101",
+        "name": "Data Destruction via AI Agent Tool Invocation",
+        "mitigations": [
+          "AML.M0024",
+          "AML.M0026",
+          "AML.M0027",
+          "AML.M0028",
+          "AML.M0029",
+          "AML.M0030"
+        ]
+      },
+      {
+        "id": "AML.T0102",
+        "name": "Generate Malicious Commands",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0103",
+        "name": "Deploy AI Agent",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0104",
+        "name": "Publish Poisoned AI Agent Tool",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0105",
+        "name": "Escape to Host",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0106",
+        "name": "Exploitation for Credential Access",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0107",
+        "name": "Exploitation for Defense Evasion",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0108",
+        "name": "AI Agent",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0109",
+        "name": "AI Supply Chain Rug Pull",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0110",
+        "name": "AI Agent Tool Poisoning",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0111",
+        "name": "AI Supply Chain Reputation Inflation",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0112",
+        "name": "Machine Compromise",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0112.000",
+        "name": "Local AI Agent",
+        "mitigations": []
+      },
+      {
+        "id": "AML.T0112.001",
+        "name": "AI Artifacts",
+        "mitigations": []
+      }
+    ],
+    "mitigations": [
+      {
+        "id": "AML.M0000",
+        "name": "Limit Public Release of Information",
+        "techniques": [
+          "AML.T0000",
+          "AML.T0002",
+          "AML.T0003",
+          "AML.T0004",
+          "AML.T0005",
+          "AML.T0005.000",
+          "AML.T0005.002"
+        ]
+      },
+      {
+        "id": "AML.M0001",
+        "name": "Limit Model Artifact Release",
+        "techniques": [
+          "AML.T0002.000",
+          "AML.T0002.001",
+          "AML.T0005",
+          "AML.T0005.000",
+          "AML.T0020",
+          "AML.T0035"
+        ]
+      },
+      {
+        "id": "AML.M0002",
+        "name": "Passive AI Output Obfuscation",
+        "techniques": [
+          "AML.T0005",
+          "AML.T0005.001",
+          "AML.T0013",
+          "AML.T0014",
+          "AML.T0024.000",
+          "AML.T0024.001",
+          "AML.T0024.002",
+          "AML.T0042",
+          "AML.T0043",
+          "AML.T0043.001",
+          "AML.T0063"
+        ]
+      },
+      {
+        "id": "AML.M0003",
+        "name": "Model Hardening",
+        "techniques": [
+          "AML.T0015",
+          "AML.T0031",
+          "AML.T0043",
+          "AML.T0043.000",
+          "AML.T0043.001",
+          "AML.T0043.002",
+          "AML.T0043.003",
+          "AML.T0043.004"
+        ]
+      },
+      {
+        "id": "AML.M0004",
+        "name": "Restrict Number of AI Model Queries",
+        "techniques": [
+          "AML.T0005",
+          "AML.T0005.001",
+          "AML.T0013",
+          "AML.T0014",
+          "AML.T0024",
+          "AML.T0024.000",
+          "AML.T0024.001",
+          "AML.T0024.002",
+          "AML.T0029",
+          "AML.T0034",
+          "AML.T0042",
+          "AML.T0043",
+          "AML.T0043.001",
+          "AML.T0043.003",
+          "AML.T0046",
+          "AML.T0062"
+        ]
+      },
+      {
+        "id": "AML.M0005",
+        "name": "Control Access to AI Models and Data at Rest",
+        "techniques": [
+          "AML.T0007",
+          "AML.T0010.002",
+          "AML.T0010.003",
+          "AML.T0018",
+          "AML.T0018.000",
+          "AML.T0018.001",
+          "AML.T0020",
+          "AML.T0025",
+          "AML.T0035",
+          "AML.T0042",
+          "AML.T0043.000",
+          "AML.T0044",
+          "AML.T0048.004"
+        ]
+      },
+      {
+        "id": "AML.M0006",
+        "name": "Use Ensemble Methods",
+        "techniques": [
+          "AML.T0010.001",
+          "AML.T0010.003",
+          "AML.T0014",
+          "AML.T0015",
+          "AML.T0031",
+          "AML.T0043",
+          "AML.T0043.000",
+          "AML.T0043.001",
+          "AML.T0043.002",
+          "AML.T0043.003",
+          "AML.T0043.004"
+        ]
+      },
+      {
+        "id": "AML.M0007",
+        "name": "Sanitize Training Data",
+        "techniques": [
+          "AML.T0010.002",
+          "AML.T0018.000",
+          "AML.T0020",
+          "AML.T0059"
+        ]
+      },
+      {
+        "id": "AML.M0008",
+        "name": "Validate AI Model",
+        "techniques": [
+          "AML.T0010.003",
+          "AML.T0018",
+          "AML.T0018.000",
+          "AML.T0018.001",
+          "AML.T0020",
+          "AML.T0043",
+          "AML.T0043.004",
+          "AML.T0057"
+        ]
+      },
+      {
+        "id": "AML.M0009",
+        "name": "Use Multi-Modal Sensors",
+        "techniques": [
+          "AML.T0015",
+          "AML.T0041",
+          "AML.T0088"
+        ]
+      },
+      {
+        "id": "AML.M0010",
+        "name": "Input Restoration",
+        "techniques": [
+          "AML.T0015",
+          "AML.T0031",
+          "AML.T0043",
+          "AML.T0043.000",
+          "AML.T0043.001",
+          "AML.T0043.002",
+          "AML.T0043.003",
+          "AML.T0043.004"
+        ]
+      },
+      {
+        "id": "AML.M0011",
+        "name": "Restrict Library Loading",
+        "techniques": [
+          "AML.T0011",
+          "AML.T0011.000",
+          "AML.T0011.001"
+        ]
+      },
+      {
+        "id": "AML.M0012",
+        "name": "Encrypt Sensitive Information",
+        "techniques": [
+          "AML.T0007",
+          "AML.T0035",
+          "AML.T0048.004",
+          "AML.T0063"
+        ]
+      },
+      {
+        "id": "AML.M0013",
+        "name": "Code Signing",
+        "techniques": [
+          "AML.T0010.001",
+          "AML.T0010.003",
+          "AML.T0011.000",
+          "AML.T0011.001",
+          "AML.T0018",
+          "AML.T0018.000",
+          "AML.T0018.001",
+          "AML.T0018.002"
+        ]
+      },
+      {
+        "id": "AML.M0014",
+        "name": "Verify AI Artifacts",
+        "techniques": [
+          "AML.T0002.001",
+          "AML.T0010",
+          "AML.T0010.002",
+          "AML.T0011",
+          "AML.T0011.000",
+          "AML.T0019"
+        ]
+      },
+      {
+        "id": "AML.M0015",
+        "name": "Adversarial Input Detection",
+        "techniques": [
+          "AML.T0015",
+          "AML.T0029",
+          "AML.T0031",
+          "AML.T0043",
+          "AML.T0043.000",
+          "AML.T0043.001",
+          "AML.T0043.002",
+          "AML.T0043.003",
+          "AML.T0043.004"
+        ]
+      },
+      {
+        "id": "AML.M0016",
+        "name": "Vulnerability Scanning",
+        "techniques": [
+          "AML.T0011",
+          "AML.T0011.000",
+          "AML.T0011.001"
+        ]
+      },
+      {
+        "id": "AML.M0017",
+        "name": "AI Model Distribution Methods",
+        "techniques": [
+          "AML.T0010.003",
+          "AML.T0035",
+          "AML.T0043.000",
+          "AML.T0044",
+          "AML.T0048.004",
+          "AML.T0063"
+        ]
+      },
+      {
+        "id": "AML.M0018",
+        "name": "User Training",
+        "techniques": [
+          "AML.T0011",
+          "AML.T0011.000",
+          "AML.T0011.001",
+          "AML.T0052",
+          "AML.T0052.000"
+        ]
+      },
+      {
+        "id": "AML.M0019",
+        "name": "Control Access to AI Models and Data in Production",
+        "techniques": [
+          "AML.T0005",
+          "AML.T0024",
+          "AML.T0029",
+          "AML.T0034",
+          "AML.T0040",
+          "AML.T0042",
+          "AML.T0043",
+          "AML.T0043.001",
+          "AML.T0046",
+          "AML.T0051",
+          "AML.T0063"
+        ]
+      },
+      {
+        "id": "AML.M0020",
+        "name": "Generative AI Guardrails",
+        "techniques": [
+          "AML.T0010",
+          "AML.T0051",
+          "AML.T0053",
+          "AML.T0054",
+          "AML.T0056",
+          "AML.T0057",
+          "AML.T0061",
+          "AML.T0062"
+        ]
+      },
+      {
+        "id": "AML.M0021",
+        "name": "Generative AI Guidelines",
+        "techniques": [
+          "AML.T0051",
+          "AML.T0053",
+          "AML.T0054",
+          "AML.T0056",
+          "AML.T0057",
+          "AML.T0061",
+          "AML.T0062"
+        ]
+      },
+      {
+        "id": "AML.M0022",
+        "name": "Generative AI Model Alignment",
+        "techniques": [
+          "AML.T0051",
+          "AML.T0053",
+          "AML.T0054",
+          "AML.T0056",
+          "AML.T0057",
+          "AML.T0061",
+          "AML.T0062"
+        ]
+      },
+      {
+        "id": "AML.M0023",
+        "name": "AI Bill of Materials",
+        "techniques": [
+          "AML.T0010",
+          "AML.T0011",
+          "AML.T0011.000",
+          "AML.T0011.001",
+          "AML.T0019",
+          "AML.T0020",
+          "AML.T0058"
+        ]
+      },
+      {
+        "id": "AML.M0024",
+        "name": "AI Telemetry Logging",
+        "techniques": [
+          "AML.T0005.001",
+          "AML.T0024",
+          "AML.T0024.000",
+          "AML.T0024.001",
+          "AML.T0024.002",
+          "AML.T0040",
+          "AML.T0047",
+          "AML.T0051",
+          "AML.T0051.000",
+          "AML.T0051.001",
+          "AML.T0051.002",
+          "AML.T0053",
+          "AML.T0085",
+          "AML.T0085.000",
+          "AML.T0085.001",
+          "AML.T0086",
+          "AML.T0101"
+        ]
+      },
+      {
+        "id": "AML.M0025",
+        "name": "Maintain AI Dataset Provenance",
+        "techniques": [
+          "AML.T0010.002",
+          "AML.T0018.000",
+          "AML.T0019",
+          "AML.T0020",
+          "AML.T0059"
+        ]
+      },
+      {
+        "id": "AML.M0026",
+        "name": "Privileged AI Agent Permissions Configuration",
+        "techniques": [
+          "AML.T0053",
+          "AML.T0082",
+          "AML.T0085",
+          "AML.T0085.000",
+          "AML.T0085.001",
+          "AML.T0086",
+          "AML.T0101"
+        ]
+      },
+      {
+        "id": "AML.M0027",
+        "name": "Single-User AI Agent Permissions Configuration",
+        "techniques": [
+          "AML.T0053",
+          "AML.T0082",
+          "AML.T0085",
+          "AML.T0085.000",
+          "AML.T0085.001",
+          "AML.T0086",
+          "AML.T0101"
+        ]
+      },
+      {
+        "id": "AML.M0028",
+        "name": "AI Agent Tools Permissions Configuration",
+        "techniques": [
+          "AML.T0053",
+          "AML.T0085",
+          "AML.T0085.001",
+          "AML.T0086",
+          "AML.T0101"
+        ]
+      },
+      {
+        "id": "AML.M0029",
+        "name": "Human In-the-Loop for AI Agent Actions",
+        "techniques": [
+          "AML.T0053",
+          "AML.T0086",
+          "AML.T0101"
+        ]
+      },
+      {
+        "id": "AML.M0030",
+        "name": "Restrict AI Agent Tool Invocation on Untrusted Data",
+        "techniques": [
+          "AML.T0053",
+          "AML.T0086",
+          "AML.T0101"
+        ]
+      },
+      {
+        "id": "AML.M0031",
+        "name": "Memory Hardening",
+        "techniques": [
+          "AML.T0080",
+          "AML.T0080.000"
+        ]
+      },
+      {
+        "id": "AML.M0032",
+        "name": "Segmentation of AI Agent Components",
+        "techniques": [
+          "AML.T0053",
+          "AML.T0085",
+          "AML.T0085.000",
+          "AML.T0085.001",
+          "AML.T0086",
+          "AML.T0098"
+        ]
+      },
+      {
+        "id": "AML.M0033",
+        "name": "Input and Output Validation for AI Agent Components",
+        "techniques": [
+          "AML.T0051",
+          "AML.T0051.000",
+          "AML.T0051.001",
+          "AML.T0051.002",
+          "AML.T0053",
+          "AML.T0086"
+        ]
+      },
+      {
+        "id": "AML.M0034",
+        "name": "Deepfake Detection",
+        "techniques": [
+          "AML.T0015",
+          "AML.T0052",
+          "AML.T0052.000",
+          "AML.T0088"
+        ]
+      }
+    ]
+  }
 }
