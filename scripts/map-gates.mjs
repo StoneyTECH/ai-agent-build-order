@@ -57,7 +57,7 @@ const MAPPING = {
     { technique: 'AML.T0104', relation: 'raises-cost', class: 'asserted',
       rationale: 'Admission control over tool packages means a published poisoned tool must clear a signed provenance check and an SBOM entry before it becomes callable. It does not stop publication; it stops adoption without a recorded decision.' },
     { technique: 'AML.T0110', relation: 'raises-cost', class: 'asserted',
-      rationale: 'Dependency scanning and a written approval policy mean a tool that changes behaviour after adoption surfaces as a diff against the recorded SBOM rather than as silent drift.' },
+      rationale: 'For a tool delivered AS A PACKAGE, dependency scanning and a written approval policy mean behaviour that changes after adoption surfaces as a diff against the recorded SBOM rather than as silent drift. This does not reach a hosted tool whose behaviour changes server-side: the endpoint, the version and the SBOM entry are all unchanged, and ATLAS names MCP connections explicitly. Narrowed deliberately rather than claimed whole.' },
     { technique: 'AML.T0109', relation: 'raises-cost', class: 'asserted',
       rationale: 'Pinning to immutable versions or digests rather than mutable tags removes the mechanism a rug pull depends on: repointing a name that was already reviewed under different content.' },
     { technique: 'AML.T0011.002', relation: 'raises-cost', class: 'asserted',
@@ -81,25 +81,38 @@ const MAPPING = {
   ],
   'gate:5': [
     { mitigation: 'AML.M0033', relation: 'implements', class: 'mitigation-backed' },
-    { technique: 'AML.T0084.001', relation: 'raises-cost', class: 'asserted',
-      rationale: 'Typed tool contracts published from source mean a tool definition discovered by an adversary reveals only the schema already intended to be public, and any capability outside that schema is not reachable through the contract.' },
+    // AML.T0084.001 (Tool Definitions) was asserted here and is WITHDRAWN.
+    // It is a Discovery technique — an adversary finding out what tools exist.
+    // The rationale claimed a contract published from source "reveals only the
+    // schema already intended to be public", which is a restatement of "keep
+    // secrets out of tool metadata", a different control on a different gate.
+    // It also points the wrong way: a clean typed contract is BETTER
+    // reconnaissance material than an undocumented one. That trade is worth
+    // making for defender clarity, but it is a design choice of ours, not a
+    // mitigation we can offer for this technique.
     { technique: 'AML.T0099', relation: 'raises-cost', class: 'asserted',
-      rationale: 'A typed contract validates tool output against a declared schema before it re-enters the agent, so poisoned data must survive structural validation rather than arriving as free text the model will trust.' },
+      rationale: 'A typed contract stops STRUCTURAL smuggling in tool output: unexpected fields, type confusion, and payloads shaped to confuse a parser must survive schema validation before re-entering the agent. It does close to nothing against injection carried inside a string the schema permits, which is the dominant case — a poisoned response of the right shape is still poisoned. Claimed at the size it actually holds.' },
     { technique: 'AML.T0010.005', relation: 'raises-cost', class: 'asserted',
-      rationale: 'Tools reachable only through a declared, typed contract cannot be invoked as an ambient capability, which removes the implicit-authority path this technique relies on.' },
+      rationale: 'Tools reachable only through a declared, typed contract cannot be invoked as an ambient capability, which removes the implicit-authority path this technique relies on. Bounded by the runtime actually enforcing the contract: if any approved tool can emit arbitrary shell, the contract is decorative for everything downstream of it.' },
     { technique: 'AML.T0084.003', relation: 'raises-cost', class: 'asserted',
-      rationale: 'When each tool call is typed and logged individually, a chain of calls is enumerable after the fact rather than opaque, so an unexpected call sequence is visible in the receipt.' }
+      rationale: 'The technique describes extracting call chains that connect user input or LLM output to an execution sink such as exec, eval or os.popen. When every tool is reached through a schema-validated contract there is no such sink at the end of the chain: model output arrives as typed arguments to a declared operation, never as free text to an interpreter. An adversary can still extract the chain and finds nothing exploitable at the end of it.' }
   ],
   'gate:6': [
     { mitigation: 'AML.M0024', relation: 'implements', class: 'mitigation-backed' },
     { technique: 'AML.T0103', relation: 'raises-cost', class: 'asserted',
-      rationale: 'A receipt schema that records which agent ran, under whose authority, and against what definition of done makes an unauthorised agent deployment an absence in the ledger rather than an indistinguishable run.' }
+      rationale: 'A receipt recording which agent ran, under whose authority, and against what definition of done makes an unauthorised deployment DETECTABLE — it is not preventive, and the gap it leaves is only a signal if the ledger is reconciled against an independent inventory of what is actually running. Two limits stated rather than buried: whoever can deploy can usually write receipts unless custody is separate, and an agent stood up outside the sanctioned path never touches this system at all.' }
   ],
   'gate:7': [
     { mitigation: 'AML.M0029', relation: 'implements', class: 'mitigation-backed' },
-    { mitigation: 'AML.M0020', relation: 'implements', class: 'mitigation-backed' },
-    { technique: 'AML.T0002.002', relation: 'raises-cost', class: 'asserted',
-      rationale: 'Never-states expressed as code rather than as instructions cannot be edited by changing agent configuration, so a modified configuration still meets a hard stop the configuration does not control.' }
+    { mitigation: 'AML.M0020', relation: 'implements', class: 'mitigation-backed' }
+    // AML.T0002.002 (AI Agent Configuration) was asserted here and is
+    // WITHDRAWN. The technique is Resource Development — acquiring PUBLICLY
+    // ACCESSIBLE config files to learn capabilities or harvest credentials.
+    // The rationale argued about resisting MODIFICATION of configuration,
+    // which is the wrong axis: moving hard stops into code does nothing to
+    // stop someone reading a config that should never have been public. The
+    // real mitigation is not publishing configs and not putting credentials in
+    // them, which belongs to gates 1 and 2. Withdrawn rather than stretched.
   ],
   'gate:8': [],
   'gate:9': []
@@ -134,14 +147,21 @@ console.log(`  open:                    ${rep.open.length}`);
 console.log(`  gates with no ATLAS edge: ${gates.filter((g) => !g.atlas.length).map((g) => g.id).join(', ') || 'none'}`);
 
 if (process.argv.includes('--write')) {
-  crosswalk.standards.push({
+  // Upsert, not push. The first --write added std:mitre-atlas; every later one
+  // would have appended a second copy, so re-running the generator after an
+  // ATLAS release would quietly leave the file citing two different versions
+  // of the same standard.
+  const std = {
     id: 'std:mitre-atlas',
     name: 'MITRE ATLAS',
     version: RELEASE.version,
     release: RELEASE.release,
     url: 'https://atlas.mitre.org/',
     canonical: 'https://github.com/mitre-atlas/atlas-data'
-  });
+  };
+  const at = crosswalk.standards.findIndex((s) => s.id === std.id);
+  if (at === -1) crosswalk.standards.push(std);
+  else crosswalk.standards[at] = std;
   crosswalk.atlas = block;
   crosswalk.gates = gates;
   writeFileSync(crosswalkPath, `${JSON.stringify(crosswalk, null, 2)}\n`);

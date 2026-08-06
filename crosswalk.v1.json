@@ -229,7 +229,7 @@
           "technique": "AML.T0110",
           "relation": "raises-cost",
           "class": "asserted",
-          "rationale": "Dependency scanning and a written approval policy mean a tool that changes behaviour after adoption surfaces as a diff against the recorded SBOM rather than as silent drift."
+          "rationale": "For a tool delivered AS A PACKAGE, dependency scanning and a written approval policy mean behaviour that changes after adoption surfaces as a diff against the recorded SBOM rather than as silent drift. This does not reach a hosted tool whose behaviour changes server-side: the endpoint, the version and the SBOM entry are all unchanged, and ATLAS names MCP connections explicitly. Narrowed deliberately rather than claimed whole."
         },
         {
           "technique": "AML.T0109",
@@ -375,28 +375,22 @@
           "class": "mitigation-backed"
         },
         {
-          "technique": "AML.T0084.001",
-          "relation": "raises-cost",
-          "class": "asserted",
-          "rationale": "Typed tool contracts published from source mean a tool definition discovered by an adversary reveals only the schema already intended to be public, and any capability outside that schema is not reachable through the contract."
-        },
-        {
           "technique": "AML.T0099",
           "relation": "raises-cost",
           "class": "asserted",
-          "rationale": "A typed contract validates tool output against a declared schema before it re-enters the agent, so poisoned data must survive structural validation rather than arriving as free text the model will trust."
+          "rationale": "A typed contract stops STRUCTURAL smuggling in tool output: unexpected fields, type confusion, and payloads shaped to confuse a parser must survive schema validation before re-entering the agent. It does close to nothing against injection carried inside a string the schema permits, which is the dominant case — a poisoned response of the right shape is still poisoned. Claimed at the size it actually holds."
         },
         {
           "technique": "AML.T0010.005",
           "relation": "raises-cost",
           "class": "asserted",
-          "rationale": "Tools reachable only through a declared, typed contract cannot be invoked as an ambient capability, which removes the implicit-authority path this technique relies on."
+          "rationale": "Tools reachable only through a declared, typed contract cannot be invoked as an ambient capability, which removes the implicit-authority path this technique relies on. Bounded by the runtime actually enforcing the contract: if any approved tool can emit arbitrary shell, the contract is decorative for everything downstream of it."
         },
         {
           "technique": "AML.T0084.003",
           "relation": "raises-cost",
           "class": "asserted",
-          "rationale": "When each tool call is typed and logged individually, a chain of calls is enumerable after the fact rather than opaque, so an unexpected call sequence is visible in the receipt."
+          "rationale": "The technique describes extracting call chains that connect user input or LLM output to an execution sink such as exec, eval or os.popen. When every tool is reached through a schema-validated contract there is no such sink at the end of the chain: model output arrives as typed arguments to a declared operation, never as free text to an interpreter. An adversary can still extract the chain and finds nothing exploitable at the end of it."
         }
       ]
     },
@@ -426,7 +420,7 @@
           "technique": "AML.T0103",
           "relation": "raises-cost",
           "class": "asserted",
-          "rationale": "A receipt schema that records which agent ran, under whose authority, and against what definition of done makes an unauthorised agent deployment an absence in the ledger rather than an indistinguishable run."
+          "rationale": "A receipt recording which agent ran, under whose authority, and against what definition of done makes an unauthorised deployment DETECTABLE — it is not preventive, and the gap it leaves is only a signal if the ledger is reconciled against an independent inventory of what is actually running. Two limits stated rather than buried: whoever can deploy can usually write receipts unless custody is separate, and an agent stood up outside the sanctioned path never touches this system at all."
         }
       ]
     },
@@ -457,12 +451,6 @@
           "mitigation": "AML.M0020",
           "relation": "implements",
           "class": "mitigation-backed"
-        },
-        {
-          "technique": "AML.T0002.002",
-          "relation": "raises-cost",
-          "class": "asserted",
-          "rationale": "Never-states expressed as code rather than as instructions cannot be edited by changing agent configuration, so a modified configuration still meets a hard stop the configuration does not control."
         }
       ]
     },

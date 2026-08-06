@@ -70,12 +70,30 @@ The unmitigated set includes the entire agent-tool supply-chain cluster:
 - `AML.T0099` AI Agent Tool Data Poisoning
 - `AML.T0109` AI Supply Chain Rug Pull
 - `AML.T0111` AI Supply Chain Reputation Inflation
-- `AML.T0084.001` Tool Definitions
-- `AML.T0002.002` AI Agent Configuration
+- `AML.T0084.001` Tool Definitions — **asserted, then withdrawn**
+- `AML.T0002.002` AI Agent Configuration — **asserted, then withdrawn**
 
 **ATLAS names these attacks and ships no controls for them.** That is where a
 build-order gate has something to say, and it is the reason this crosswalk is
 worth publishing rather than being a lookup table anyone could generate.
+
+**Two of them were withdrawn on review, and the reason generalises.** Both were
+mapped by keyword rather than by what the technique describes. `AML.T0084.001`
+and `AML.T0084.003` sit under Discovery, and `AML.T0002.002` under Resource
+Development — they are about an adversary FINDING or ACQUIRING something, not
+modifying or exploiting it. A control that makes a tool contract cleaner does
+not reduce discovery of that contract; it arguably aids it. A control that
+moves hard stops into code does not stop someone reading a config file that was
+published by mistake.
+
+`AML.T0084.003` survived on a different argument: the technique is specifically
+about chains ending in an execution sink, and a schema-validated contract means
+there is no sink at the end of the chain. Same gate, rebuilt reasoning.
+
+Checking the tactic each technique sits in is now part of proposing an edge.
+ATLAS does mitigate Discovery and Resource Development techniques (5 of 16 and
+6 of 26), so the tactic is not a bar — it is a question the rationale has to
+answer.
 
 ### Two mapping classes, and they must be labelled differently
 
