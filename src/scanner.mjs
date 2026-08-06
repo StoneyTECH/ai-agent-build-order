@@ -13,6 +13,29 @@ const DEFAULT_IGNORE_DIRS = new Set([
 const TEXT_EXT = /\.(m?[jt]sx?|py|go|rs|rb|java|kt|cs|php|json|ya?ml|toml|svx|svelte|md|mdx|sh|bash|zsh|env|cfg|conf|ini|txt|Dockerfile)$/i;
 const TEXT_NAME = /^(Dockerfile|Makefile|\.env[.\w-]*|\.mcp\.json|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|poetry\.lock|Cargo\.lock|Gemfile\.lock|go\.sum)$/i;
 
+// Files where a control is IMPLEMENTED rather than described. A detector that
+// looks for code should be pointed here, because the same token that proves a
+// control in source ("inputSchema") merely mentions it in a README table.
+// Config stays in scope: a tool manifest genuinely declares typed tools.
+export const CODE_EXT = /\.(m?[jt]sx?|py|go|rs|rb|java|kt|cs|php|json|ya?ml|toml|svelte|sh|bash|zsh)$/i;
+
+// Artifacts that DESCRIBE controls, including our own self-reports. These can
+// never satisfy a static detector — that would be the report proving itself.
+// Excluded unconditionally: the old guard only applied when --attest was
+// passed, so running without the flag let attestation.json become evidence.
+// `gates.mjs` carries an `essayLine` for every gate — prose describing the
+// control, inside source. It matched its own detectors (gate 9 cited
+// "Budgets that expire, an escalation…" as evidence of a rollback path). Being
+// code is not the test; being a DESCRIPTION is.
+const SELF_DESCRIBING = /^(attestation\.json|SCORECARD\.md|CROSSWALK\.md|crosswalk\.v\d+\.json|gates\.mjs|negative-control\.test\.mjs)$/i;
+
+// Comment-leading syntax across the languages TEXT_EXT admits. Used only to
+// RANK evidence, never to discard it — a control can legitimately be a config
+// line that looks like a comment in some other language.
+const COMMENT_RE = /^\s*(\/\/|\/\*|\*|#|<!--|--)/;
+const isComment = (text) => (COMMENT_RE.test(text) ? 1 : 0);
+const OVERSCAN = 4;
+
 // A line carrying this marker is skipped by anti-pattern scans. It is the
 // tool's own escape hatch for a reviewed false positive — the same "gate the
 // never-states, but allow the vetted exception" idea it audits for.
@@ -33,6 +56,7 @@ export function scanRepo(root, { ignoreDirs = DEFAULT_IGNORE_DIRS, ignoreFiles =
         if (!ignoreDirs.has(e.name)) walk(full);
       } else if (e.isFile()) {
         if (ignoreFileSet.has(e.name)) continue;
+        if (SELF_DESCRIBING.test(e.name)) continue;
         if (TEXT_EXT.test(e.name) || TEXT_NAME.test(e.name)) files.push(full);
       }
     }
@@ -89,11 +113,19 @@ export class RepoContext {
         if (skipAllowed && lines[i].includes(ALLOW_MARKER)) continue;
         if (matches(lines[i])) {
           hits.push({ file: relPath, line: i + 1, text: lines[i].trim().slice(0, 140) });
-          if (hits.length >= limit) return hits;
+          // Keep collecting past `limit` so ranking has something to choose
+          // from, but stop well short of scanning the whole tree for nothing.
+          if (hits.length >= limit * OVERSCAN) { i = lines.length; break; }
         }
       }
+      if (hits.length >= limit * OVERSCAN) break;
     }
-    return hits;
+    // A comment that MENTIONS a control is not the control. The verdict may
+    // still be right — the real call is usually in the same file — but the
+    // evidence line ends up in the receipt, and a receipt that proves a typed
+    // tool by quoting `// registerTool block below` is the same mistake one
+    // level down. Rank real code above commentary; keep both.
+    return hits.sort((a, b) => isComment(a.text) - isComment(b.text)).slice(0, limit);
   }
 
   // Does any file's relative path match? (presence of test dirs, CI, etc.)

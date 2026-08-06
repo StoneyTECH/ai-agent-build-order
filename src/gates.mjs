@@ -10,6 +10,8 @@
 // evidence is in the tree," never "this is correct." The tool's whole honesty
 // depends on saying unknown when it cannot see, and never inflating a claim.
 
+import { CODE_EXT } from './scanner.mjs';
+
 const ev = (hits) => hits.map((h) => `${h.file}:${h.line} — ${h.text}`);
 
 // Secret-shaped literals, assembled from fragments so this source file carries
@@ -112,7 +114,9 @@ export const GATES = [
       // "run under an identity." If one is present, that is a gap, full stop.
       const secrets = ctx.grep(looksLikeHardcodedSecret, { limit: 3, skipAllowed: true });
       if (secrets.length) return { verdict: 'gap', mode: 'static', evidence: [`hardcoded credential-shaped literal: ${ev(secrets).join('; ')}`] };
-      const id = ctx.grep(/principal|service.?account|agent.?identity|caller.?identity|assume.?role|workload.?identity|per-agent (identity|credential)|authenticat/i, { limit: 4 });
+      // AC2: identity wiring is code or config. A README paragraph describing
+      // "a principal architect's reference" is not a service account.
+      const id = ctx.grep(/principal|service.?account|agent.?identity|caller.?identity|assume.?role|workload.?identity|per-agent (identity|credential)|authenticat/i, { limit: 4, include: CODE_EXT });
       if (id.length) return { verdict: 'held', mode: 'static', evidence: ev(id) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no identity/principal wiring detected; attest how the agent runs under its own identity'] };
     },
@@ -126,7 +130,9 @@ export const GATES = [
       // `\*(?!\*)` so markdown bold (**Tool:**) is not read as a wildcard grant.
       const wild = ctx.grep(/allow[_-]?all|tools?["']?\s*[:=]\s*["']?\*(?!\*)|permissions?["']?\s*[:=]\s*["']?\*(?!\*)/i, { limit: 3, skipAllowed: true });
       if (wild.length) return { verdict: 'gap', mode: 'static', evidence: [`wildcard grant (no deny-by-default): ${ev(wild).join('; ')}`] };
-      const allow = ctx.grep(/allow[_-]?list|allowed[_-]?tools|permitted[_-]?tools|deny[_-]?by[_-]?default|scopes?\s*[:=]|\bRBAC\b|least[_-]?privilege/i, { limit: 4 });
+      // AC2: a boundary lives in code or config. The README table row asking
+      // "Is there an allowlist and deny-by-default?" is the question, not one.
+      const allow = ctx.grep(/allow[_-]?list|allowed[_-]?tools|permitted[_-]?tools|deny[_-]?by[_-]?default|scopes?\s*[:=]|\bRBAC\b|least[_-]?privilege/i, { limit: 4, include: CODE_EXT });
       if (allow.length) return { verdict: 'held', mode: 'static', evidence: ev(allow) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no scope allowlist detected; attest the deny-by-default boundary'] };
     },
@@ -137,7 +143,8 @@ export const GATES = [
     title: 'Classify the evidence',
     essayLine: 'Decide which sources may enter context and how freshness and provenance get checked, and treat every input as adversarial until it proves otherwise.',
     detect(ctx) {
-      const val = ctx.grep(/zod|pydantic|ajv|joi|\.parse\(|validate[_-]?input|sanitiz|provenance|prompt[_-]?injection|untrusted|allowed[_-]?sources|source[_-]?allowlist/i, { limit: 4 });
+      // AC2: validation is code. A design doc explaining provenance is not it.
+      const val = ctx.grep(/zod|pydantic|ajv|joi|\.parse\(|validate[_-]?input|sanitiz|provenance|prompt[_-]?injection|untrusted|allowed[_-]?sources|source[_-]?allowlist/i, { limit: 4, include: CODE_EXT });
       if (val.length) return { verdict: 'held', mode: 'static', evidence: ev(val) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no input-validation/provenance checks detected; attest how retrieved context is classified'] };
     },
@@ -148,7 +155,10 @@ export const GATES = [
     title: 'Type the tools',
     essayLine: 'The model proposes and the tool performs; identity, authorization, typed inputs, idempotency, and limits hold at that seam, the one place they can be enforced rather than requested.',
     detect(ctx) {
-      const typed = ctx.grep(/inputSchema|input_schema|args_schema|registerTool|server\.tool|z\.object|JSONSchema|@tool|tool\(\{|function[_-]?schema/i, { limit: 4 });
+      // AC2: a typed tool contract is code or config, never prose. Restricting
+      // to CODE_EXT is what stops a README sentence about `inputSchema` from
+      // reading as an implemented schema.
+      const typed = ctx.grep(/inputSchema|input_schema|args_schema|registerTool|server\.tool|z\.object|JSONSchema|@tool|tool\(\{|function[_-]?schema/i, { limit: 4, include: CODE_EXT });
       if (typed.length) return { verdict: 'held', mode: 'static', evidence: ev(typed) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no typed tool schemas detected; attest that tools enforce typed inputs and per-tool auth'] };
     },
@@ -159,7 +169,9 @@ export const GATES = [
     title: 'Define done, keep the receipt',
     essayLine: 'A model saying "done" is a claim; a receipt is evidence. Keep the sources, the policy result, the changed state.',
     detect(ctx) {
-      const rec = ctx.grep(/audit[_-]?log|audit[_-]?trail|receipt|\bledger\b|structured[_-]?log|record.*(state|change|decision)|evidence[_-]?(bundle|record)/i, { limit: 4 });
+      // AC2: a receipt is emitted by code. Prose calling itself "the
+      // proof-of-work companion to the essay" was satisfying this gate.
+      const rec = ctx.grep(/audit[_-]?log|audit[_-]?trail|receipt|\bledger\b|structured[_-]?log|record.*(state|change|decision)|evidence[_-]?(bundle|record)/i, { limit: 4, include: CODE_EXT });
       if (rec.length) return { verdict: 'held', mode: 'static', evidence: ev(rec) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no audit-trail/receipt emission detected; attest what proves a run actually happened'] };
     },
@@ -198,9 +210,16 @@ export const GATES = [
     title: 'Build the way home',
     essayLine: 'Budgets that expire, an escalation that lands with a person, a rollback that has actually been run, and a recovery model vetted on your own hardware before an incident asks.',
     detect(ctx) {
-      const home = ctx.grep(/timeout|budget|deadline|rollback|revert|compensat|escalat|human[_-]?in[_-]?the[_-]?loop|\bHITL\b|retry|circuit[_-]?breaker|abort[_-]?signal/i, { limit: 4 });
+      // AC2, and a deliberate ruling: a documented runbook does not earn
+      // `held` here. The way home has to be executable — a budget that expires
+      // in code, a rollback that can be run, an escalation that fires — because
+      // a recovery path nobody has executed is the one that fails in an
+      // incident. A repo whose runbook IS the answer still gets a true verdict:
+      // it attests with a receipt pointing at the runbook and lands on
+      // `attested`, which is honest, rather than an inflated `held`.
+      const home = ctx.grep(/timeout|budget|deadline|rollback|revert|compensat|escalat|human[_-]?in[_-]?the[_-]?loop|\bHITL\b|retry|circuit[_-]?breaker|abort[_-]?signal/i, { limit: 4, include: CODE_EXT });
       if (home.length) return { verdict: 'held', mode: 'static', evidence: ev(home) };
-      return { verdict: 'unknown', mode: 'attest', evidence: ['no budgets/rollback/escalation detected; attest the recovery path and who it lands on'] };
+      return { verdict: 'unknown', mode: 'attest', evidence: ['no executable budget/rollback/escalation detected; attest the recovery path, who it lands on, and when it was last run'] };
     },
   },
 ];
