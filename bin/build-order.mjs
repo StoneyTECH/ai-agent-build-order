@@ -9,6 +9,9 @@ import { writeFileSync } from 'node:fs';
 import { audit } from '../src/audit.mjs';
 import { renderMarkdown, renderLine } from '../src/render.mjs';
 import { renderCoverageMarkdown, atlasCoverage } from '../src/atlas-report.mjs';
+import { repoAtlasCoverage } from '../src/atlas-coverage.mjs';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 function parseArgs(argv) {
   const args = { _: [], attest: null, out: null, json: false, ignore: [] };
@@ -29,6 +32,7 @@ const USAGE = `build-order — audit an agent build against the nine-gate Build 
 Usage:
   build-order audit <path> [--attest file.json] [--out SCORECARD.md] [--json]
   build-order atlas [--json]
+  build-order atlas-coverage <path> [--attest f.json] [--ignore a,b] [--json]
 
 Verdicts:
   HELD      static evidence in the repo        ATTESTED  self-reported, receipt required
@@ -36,7 +40,11 @@ Verdicts:
 
 Exit 1 if any gate is a GAP. Attested/unknown do not fail the build.
 
-The atlas command prints MITRE ATLAS crosswalk coverage for the nine gates.
+atlas prints crosswalk coverage in the abstract: which techniques the nine
+gates bear on at all. atlas-coverage answers it for ONE repo, by joining the
+gate verdicts of that tree to the crosswalk. An edge this project asserts can
+never report HELD there, however green the gate — we can prove we run a
+control, never that it works.
 Edges backed by a published ATLAS mitigation and edges this project asserts
 are counted separately and never summed.`;
 
@@ -50,6 +58,25 @@ function main() {
       process.exit(2);
     }
     console.log(args.json ? JSON.stringify(rep, null, 2) : renderCoverageMarkdown());
+    process.exit(0);   // reporting coverage is never a build failure
+  }
+
+  if (args._[0] === 'atlas-coverage' && args._[1] && !args.help) {
+    const cw = JSON.parse(readFileSync(fileURLToPath(new URL('../crosswalk.v1.json', import.meta.url)), 'utf8'));
+    let rep;
+    try {
+      rep = repoAtlasCoverage(args._[1], cw, { attestPath: args.attest, ignore: args.ignore });
+    } catch (err) {
+      console.error(`build-order: ${err.message}`);
+      process.exit(2);
+    }
+    if (args.json) console.log(JSON.stringify(rep, null, 2));
+    else {
+      const s = rep.summary;
+      console.log(`ATLAS coverage for ${rep.target} — ${rep.atlasRelease}`);
+      console.log(`  ${s.held} held · ${s.attested} attested · ${s.gap} gap · ${s.unknown} unknown  (${rep.techniques.length} techniques)`);
+      console.log(`  ${rep.cappedByCeiling} capped by the asserted ceiling: our control, not MITRE's authority`);
+    }
     process.exit(0);   // reporting coverage is never a build failure
   }
 

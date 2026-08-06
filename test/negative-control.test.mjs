@@ -114,6 +114,28 @@ export const USAGE = \`
   }
 });
 
+test('NEGATIVE: an anti-pattern written in a comment is not an anti-pattern', () => {
+  // A grant is an effective permission. This repo's own scorecard went red on
+  // a sentence explaining the wildcard rule — the prose describing the defect
+  // was read as the defect. Both halves pinned: prose must not fire, and a
+  // real grant must, because a wildcard genuinely IS a quoted star and the
+  // string-literal demotion used elsewhere would blind this detector entirely.
+  const described = fixture({
+    'notes.mjs': `// never write permissions: "*" or tools: "*" in a config
+// allow_all is the anti-pattern this gate exists to catch`
+  });
+  const real = fixture({ 'config.mjs': `export const permissions = "*";` });
+  try {
+    const a = audit(described).gates.find((g) => g.key === 'scope');
+    assert.notEqual(a.verdict, 'gap', `prose about a wildcard was read as one: ${a.evidence?.[0]}`);
+    const b = audit(real).gates.find((g) => g.key === 'scope');
+    assert.equal(b.verdict, 'gap', 'a real wildcard grant went undetected');
+  } finally {
+    rmSync(described, { recursive: true, force: true });
+    rmSync(real, { recursive: true, force: true });
+  }
+});
+
 test('POSITIVE: a real implementation is still detected', () => {
   // The other half. Without this, "return unknown always" would pass above.
   const dir = fixture({

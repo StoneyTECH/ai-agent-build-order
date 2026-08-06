@@ -129,7 +129,18 @@ export const GATES = [
     essayLine: 'Write down what the agent may touch and deny everything else by default; a boundary that was never written down was never a boundary.',
     detect(ctx) {
       // `\*(?!\*)` so markdown bold (**Tool:**) is not read as a wildcard grant.
-      const wild = ctx.grep(/allow[_-]?all|tools?["']?\s*[:=]\s*["']?\*(?!\*)|permissions?["']?\s*[:=]\s*["']?\*(?!\*)/i, { limit: 3, skipAllowed: true });
+      //
+      // Comments are dropped here, unlike in the secret scan below. A grant is
+      // an effective permission: `permissions: "*"` written in a comment grants
+      // nothing, and prose explaining the anti-pattern is not the anti-pattern.
+      // A hardcoded credential is the opposite — commenting it out does not
+      // un-leak it — so gate 2 keeps its comment hits deliberately.
+      //
+      // Note this cannot use the string-literal demotion the positive
+      // detectors use: a wildcard grant genuinely IS a quoted star, so
+      // demoting quoted matches would blind the detector to every real one.
+      const wild = ctx.grep(/allow[_-]?all|tools?["']?\s*[:=]\s*["']?\*(?!\*)|permissions?["']?\s*[:=]\s*["']?\*(?!\*)/i, { limit: 3, skipAllowed: true })
+        .filter((h) => h.kind !== 'comment');
       if (wild.length) return { verdict: 'gap', mode: 'static', evidence: [`wildcard grant (no deny-by-default): ${ev(wild).join('; ')}`] };
       // AC2: a boundary lives in code or config. The README table row asking
       // "Is there an allowlist and deny-by-default?" is the question, not one.
