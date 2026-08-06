@@ -141,6 +141,28 @@ test('NEGATIVE: an anti-pattern written in a comment is not an anti-pattern', ()
   }
 });
 
+test('NEGATIVE: a keyword in a data VALUE is content, not a declaration', () => {
+  // Both halves found on real repositories. A college application tracker
+  // satisfied the receipt gate on `"chip": "Confirm receipt"`, while
+  // package.json genuinely declaring a validator must still count.
+  const content = fixture({
+    'plan.json': JSON.stringify({
+      steps: [{ chip: 'Confirm receipt', detail: 'both were sent to the registrar' }],
+      notes: 'keep the audit log of who we called'
+    }, null, 2)
+  });
+  const declared = fixture({ 'package.json': JSON.stringify({ dependencies: { zod: '^3.23.0' } }, null, 2) });
+  try {
+    const a = audit(content).gates.find((g) => g.key === 'receipts');
+    assert.notEqual(a.verdict, 'held', `data content was read as a receipt system: ${a.evidence?.[0]}`);
+    const b = audit(declared).gates.find((g) => g.key === 'evidence');
+    assert.equal(b.verdict, 'held', 'a real dependency declaration went undetected');
+  } finally {
+    rmSync(content, { recursive: true, force: true });
+    rmSync(declared, { recursive: true, force: true });
+  }
+});
+
 test('POSITIVE: a real implementation is still detected', () => {
   // The other half. Without this, "return unknown always" would pass above.
   const dir = fixture({

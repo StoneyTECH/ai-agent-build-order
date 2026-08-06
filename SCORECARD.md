@@ -1,6 +1,6 @@
 # Build Order Scorecard
 
-**Target:** `.` · **Files scanned:** 19 · **Tool:** build-order v0.1.0 · **Generated:** 2026-08-06T03:55:25.480Z
+**Target:** `.` · **Files scanned:** 19 · **Tool:** build-order v0.1.0 · **Generated:** 2026-08-06T04:07:47.616Z
 
 **6 held · 3 attested · 0 gap · 0 unknown** of 9 gates — no hard gaps
 

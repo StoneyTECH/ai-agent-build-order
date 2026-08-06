@@ -6,6 +6,15 @@ import { join, relative, basename } from 'node:path';
 const DEFAULT_IGNORE_DIRS = new Set([
   'node_modules', '.git', 'dist', 'build', '.svelte-kit', '.wrangler',
   'coverage', '__pycache__', '.venv', 'venv', '.next', '.turbo', 'vendor',
+  // Copies of the repo living inside the repo. Agent tooling keeps scratch
+  // worktrees under .claude, and release staging keeps a built copy under
+  // .release; both are full trees. Scanning them double-counts every file,
+  // cites evidence at paths that do not exist in the canonical tree, and — the
+  // reason this is a correctness bug and not just noise — lets a control
+  // DELETED from the repo keep reporting held from a stale copy. Found by
+  // running this against real repositories: 4 of 6 had a .claude worktree, and
+  // every verdict for one of them was sourced from it.
+  '.claude', '.release',
 ]);
 
 // Only scan text/code files. Binaries and lockfiles carry no signal and
@@ -67,9 +76,17 @@ const IMPORT_RE = /^\s*(import\b|export\s.*\bfrom\b|from\s+\S+\s+import\b|\w+\s*
 // at all, so they look like bare code to any per-line rule. That is where CLI
 // usage text, SQL and — for agent repos especially — prompt bodies live. The
 // caller tracks backtick parity down the file and passes it in.
+// In a data file everything is quoted, so string demotion cannot apply — but
+// key and value still mean different things. A match in the KEY is a
+// declaration (`"zod": "^3.23.0"` admits a dependency; `serviceAccount:` names
+// one). A match in the VALUE is content, and content is prose that happens to
+// live in JSON. Without this split, `"chip": "Confirm receipt"` in a college
+// application tracker satisfied the audit-receipt gate on a real repository.
+const keyPart = (line) => line.split(/:(.*)/s)[0];
+
 export function classifyHit(text, matches, relPath = '', inTemplate = false) {
   if (COMMENT_RE.test(text)) return 'comment';
-  if (DATA_EXT.test(relPath)) return 'code';
+  if (DATA_EXT.test(relPath)) return matches(keyPart(text)) ? 'code' : 'string';
   if (IMPORT_RE.test(text)) return 'code';
   if (inTemplate) return 'string';
   return matches(stripLiterals(text)) ? 'code' : 'string';
