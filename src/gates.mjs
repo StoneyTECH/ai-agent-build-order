@@ -10,7 +10,7 @@
 // evidence is in the tree," never "this is correct." The tool's whole honesty
 // depends on saying unknown when it cannot see, and never inflating a claim.
 
-import { CODE_EXT } from './scanner.mjs';
+import { CODE_EXT, codeHits } from './scanner.mjs';
 
 const ev = (hits) => hits.map((h) => `${h.file}:${h.line} — ${h.text}`);
 
@@ -117,7 +117,8 @@ export const GATES = [
       // AC2: identity wiring is code or config. A README paragraph describing
       // "a principal architect's reference" is not a service account.
       const id = ctx.grep(/principal|service.?account|agent.?identity|caller.?identity|assume.?role|workload.?identity|per-agent (identity|credential)|authenticat/i, { limit: 4, include: CODE_EXT });
-      if (id.length) return { verdict: 'held', mode: 'static', evidence: ev(id) };
+      const idCode = codeHits(id);
+      if (idCode.length) return { verdict: 'held', mode: 'static', evidence: ev(idCode) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no identity/principal wiring detected; attest how the agent runs under its own identity'] };
     },
   },
@@ -133,7 +134,8 @@ export const GATES = [
       // AC2: a boundary lives in code or config. The README table row asking
       // "Is there an allowlist and deny-by-default?" is the question, not one.
       const allow = ctx.grep(/allow[_-]?list|allowed[_-]?tools|permitted[_-]?tools|deny[_-]?by[_-]?default|scopes?\s*[:=]|\bRBAC\b|least[_-]?privilege/i, { limit: 4, include: CODE_EXT });
-      if (allow.length) return { verdict: 'held', mode: 'static', evidence: ev(allow) };
+      const allowCode = codeHits(allow);
+      if (allowCode.length) return { verdict: 'held', mode: 'static', evidence: ev(allowCode) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no scope allowlist detected; attest the deny-by-default boundary'] };
     },
   },
@@ -145,7 +147,8 @@ export const GATES = [
     detect(ctx) {
       // AC2: validation is code. A design doc explaining provenance is not it.
       const val = ctx.grep(/zod|pydantic|ajv|joi|\.parse\(|validate[_-]?input|sanitiz|provenance|prompt[_-]?injection|untrusted|allowed[_-]?sources|source[_-]?allowlist/i, { limit: 4, include: CODE_EXT });
-      if (val.length) return { verdict: 'held', mode: 'static', evidence: ev(val) };
+      const valCode = codeHits(val);
+      if (valCode.length) return { verdict: 'held', mode: 'static', evidence: ev(valCode) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no input-validation/provenance checks detected; attest how retrieved context is classified'] };
     },
   },
@@ -159,7 +162,8 @@ export const GATES = [
       // to CODE_EXT is what stops a README sentence about `inputSchema` from
       // reading as an implemented schema.
       const typed = ctx.grep(/inputSchema|input_schema|args_schema|registerTool|server\.tool|z\.object|JSONSchema|@tool|tool\(\{|function[_-]?schema/i, { limit: 4, include: CODE_EXT });
-      if (typed.length) return { verdict: 'held', mode: 'static', evidence: ev(typed) };
+      const typedCode = codeHits(typed);
+      if (typedCode.length) return { verdict: 'held', mode: 'static', evidence: ev(typedCode) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no typed tool schemas detected; attest that tools enforce typed inputs and per-tool auth'] };
     },
   },
@@ -172,7 +176,8 @@ export const GATES = [
       // AC2: a receipt is emitted by code. Prose calling itself "the
       // proof-of-work companion to the essay" was satisfying this gate.
       const rec = ctx.grep(/audit[_-]?log|audit[_-]?trail|receipt|\bledger\b|structured[_-]?log|record.*(state|change|decision)|evidence[_-]?(bundle|record)/i, { limit: 4, include: CODE_EXT });
-      if (rec.length) return { verdict: 'held', mode: 'static', evidence: ev(rec) };
+      const recCode = codeHits(rec);
+      if (recCode.length) return { verdict: 'held', mode: 'static', evidence: ev(recCode) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no audit-trail/receipt emission detected; attest what proves a run actually happened'] };
     },
   },
@@ -218,7 +223,8 @@ export const GATES = [
       // it attests with a receipt pointing at the runbook and lands on
       // `attested`, which is honest, rather than an inflated `held`.
       const home = ctx.grep(/timeout|budget|deadline|rollback|revert|compensat|escalat|human[_-]?in[_-]?the[_-]?loop|\bHITL\b|retry|circuit[_-]?breaker|abort[_-]?signal/i, { limit: 4, include: CODE_EXT });
-      if (home.length) return { verdict: 'held', mode: 'static', evidence: ev(home) };
+      const homeCode = codeHits(home);
+      if (homeCode.length) return { verdict: 'held', mode: 'static', evidence: ev(homeCode) };
       return { verdict: 'unknown', mode: 'attest', evidence: ['no executable budget/rollback/escalation detected; attest the recovery path, who it lands on, and when it was last run'] };
     },
   },

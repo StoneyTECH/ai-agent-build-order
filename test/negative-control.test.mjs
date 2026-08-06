@@ -82,6 +82,38 @@ test('NEGATIVE: a self-report can never satisfy a static detector', () => {
   }
 });
 
+test('NEGATIVE: keywords in string, regex and template literals are mentions', () => {
+  // The markdown fixture above never reaches this code path — detectors that
+  // take `include: CODE_EXT` skip .md entirely. So description living INSIDE
+  // source needs its own control. All three shapes are real and all three were
+  // producing false HELD verdicts in this repo: crosswalk rationale strings in
+  // scripts/, the detectors' own regexes in gates.mjs, and the CLI's verdict
+  // legend in a multi-line template whose interior lines carry no delimiter.
+  const dir = fixture({
+    'describes.mjs': `
+export const RATIONALE = 'a deny-by-default scope with an allowlist and least-privilege RBAC';
+export const IDENTITY_RE = /principal|service.?account|assume.?role|workload.?identity/;
+export const TYPED_RE = /inputSchema|registerTool|args_schema|JSONSchema/;
+export const USAGE = \`
+  receipt      runs emit an audit log and a receipt into the ledger
+  rollback     budgets and timeouts expire; escalation is human-in-the-loop
+  provenance   context is sanitized and checked for prompt injection
+\`;
+`
+  });
+  try {
+    const held = audit(dir).gates.filter((g) => g.verdict === 'held');
+    assert.deepEqual(
+      held.map((g) => g.key),
+      [],
+      `talking about controls in source satisfied ${held.length} gate(s): ` +
+        held.map((g) => `${g.key} <- ${g.evidence?.[0]}`).join('; ')
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('POSITIVE: a real implementation is still detected', () => {
   // The other half. Without this, "return unknown always" would pass above.
   const dir = fixture({

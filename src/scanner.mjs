@@ -23,18 +23,68 @@ export const CODE_EXT = /\.(m?[jt]sx?|py|go|rs|rb|java|kt|cs|php|json|ya?ml|toml
 // never satisfy a static detector — that would be the report proving itself.
 // Excluded unconditionally: the old guard only applied when --attest was
 // passed, so running without the flag let attestation.json become evidence.
-// `gates.mjs` carries an `essayLine` for every gate — prose describing the
-// control, inside source. It matched its own detectors (gate 9 cited
-// "Budgets that expire, an escalation…" as evidence of a rollback path). Being
-// code is not the test; being a DESCRIPTION is.
-const SELF_DESCRIBING = /^(attestation\.json|SCORECARD\.md|CROSSWALK\.md|crosswalk\.v\d+\.json|gates\.mjs|negative-control\.test\.mjs)$/i;
+// gates.mjs and the negative-control fixture used to be listed here too. They
+// are not any more: classifyHit() demotes their prose because it sits inside
+// string literals, which is the general form of the same problem.
+const SELF_DESCRIBING = /^(attestation\.json|SCORECARD\.md|CROSSWALK\.md|crosswalk\.v\d+\.json)$/i;
 
-// Comment-leading syntax across the languages TEXT_EXT admits. Used only to
-// RANK evidence, never to discard it — a control can legitimately be a config
-// line that looks like a comment in some other language.
+// Comment-leading syntax across the languages TEXT_EXT admits.
 const COMMENT_RE = /^\s*(\/\/|\/\*|\*|#|<!--|--)/;
-const isComment = (text) => (COMMENT_RE.test(text) ? 1 : 0);
 const OVERSCAN = 4;
+
+// Data formats are quoted all the way down, and a quoted key there IS the
+// declaration — `"zod": "^3.23.0"` genuinely admits a dependency. String
+// demotion below would read every one of them as mere mention, so it is not
+// applied to these.
+const DATA_EXT = /\.(json|ya?ml|toml|cfg|conf|ini|env)$/i;
+
+// Remove string and regex literals and trailing line comments, so what is left
+// is code position. Deliberately naive: it only has to be right often enough
+// to rank. Regex literals matter more than they look — a detector's own
+// pattern `/principal|service.?account/` contains every keyword it hunts for,
+// in what would otherwise read as code position, so the file defining the
+// detectors satisfies all of them.
+const stripLiterals = (s) =>
+  s.replace(/`(?:\\.|[^`\\])*`/g, '``')
+    .replace(/'(?:\\.|[^'\\])*'/g, "''")
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
+    .replace(/([(,=:[]\s*)\/(?:\\.|\[(?:\\.|[^\]\\])*\]|[^/\\\n])+\/[gimsuy]*/g, '$1//')
+    .replace(/(^|[^:])\/\/.*$/, '$1');
+
+// Where did the match actually land? A token inside a string literal is the
+// control being TALKED ABOUT — `rationale: 'a deny-by-default scope...'` is our
+// crosswalk prose, not a boundary. A token in code position is the control.
+// This generalises what a filename exclusion list can only special-case: it
+// catches gates.mjs's essayLine strings, map-gates.mjs's rationales and the
+// CLI's own verdict legend without naming any of them.
+// An import specifier is quoted but structural: `import { z } from 'zod'` is
+// how a dependency is actually taken on, not a sentence about one. Demoting it
+// was a false negative the positive half of the negative control caught
+// immediately — gate 4 stopped seeing zod in a file that genuinely imports it.
+const IMPORT_RE = /^\s*(import\b|export\s.*\bfrom\b|from\s+\S+\s+import\b|\w+\s*[:=]\s*require\(|require\()/;
+
+// Inside a multi-line template literal the interior lines carry no delimiter
+// at all, so they look like bare code to any per-line rule. That is where CLI
+// usage text, SQL and — for agent repos especially — prompt bodies live. The
+// caller tracks backtick parity down the file and passes it in.
+export function classifyHit(text, matches, relPath = '', inTemplate = false) {
+  if (COMMENT_RE.test(text)) return 'comment';
+  if (DATA_EXT.test(relPath)) return 'code';
+  if (IMPORT_RE.test(text)) return 'code';
+  if (inTemplate) return 'string';
+  return matches(stripLiterals(text)) ? 'code' : 'string';
+}
+
+// Unescaped backticks on a line, ignoring any inside quotes or comments.
+export const flipsTemplate = (line) => {
+  const bare = line.replace(/'(?:\\.|[^'\\])*'/g, "''").replace(/"(?:\\.|[^"\\])*"/g, '""');
+  return ((bare.match(/(?<!\\)`/g) || []).length % 2) === 1;
+};
+
+const RANK = { code: 0, string: 1, comment: 2 };
+
+// Hits that are actual implementation, not mentions of one.
+export const codeHits = (hits) => hits.filter((h) => h.kind === 'code');
 
 // A line carrying this marker is skipped by anti-pattern scans. It is the
 // tool's own escape hatch for a reviewed false positive — the same "gate the
@@ -109,10 +159,17 @@ export class RepoContext {
       const text = this.read(f);
       if (!text) continue;
       const lines = text.split('\n');
+      let inTemplate = false;
       for (let i = 0; i < lines.length; i++) {
+        const wasInTemplate = inTemplate;
+        if (flipsTemplate(lines[i])) inTemplate = !inTemplate;
         if (skipAllowed && lines[i].includes(ALLOW_MARKER)) continue;
         if (matches(lines[i])) {
-          hits.push({ file: relPath, line: i + 1, text: lines[i].trim().slice(0, 140) });
+          hits.push({
+            file: relPath, line: i + 1, text: lines[i].trim().slice(0, 140),
+            // a line that OPENS a template is still code; its interior is not
+            kind: classifyHit(lines[i], matches, relPath, wasInTemplate && inTemplate)
+          });
           // Keep collecting past `limit` so ranking has something to choose
           // from, but stop well short of scanning the whole tree for nothing.
           if (hits.length >= limit * OVERSCAN) { i = lines.length; break; }
@@ -120,12 +177,11 @@ export class RepoContext {
       }
       if (hits.length >= limit * OVERSCAN) break;
     }
-    // A comment that MENTIONS a control is not the control. The verdict may
-    // still be right — the real call is usually in the same file — but the
-    // evidence line ends up in the receipt, and a receipt that proves a typed
-    // tool by quoting `// registerTool block below` is the same mistake one
-    // level down. Rank real code above commentary; keep both.
-    return hits.sort((a, b) => isComment(a.text) - isComment(b.text)).slice(0, limit);
+    // A comment or a string that MENTIONS a control is not the control. Both
+    // are kept — a caller may legitimately want them — but code position sorts
+    // first, so the evidence line that lands in the receipt is the strongest
+    // available rather than merely the earliest in the file.
+    return hits.sort((a, b) => RANK[a.kind] - RANK[b.kind]).slice(0, limit);
   }
 
   // Does any file's relative path match? (presence of test dirs, CI, etc.)
