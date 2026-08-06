@@ -120,11 +120,16 @@ test('NEGATIVE: an anti-pattern written in a comment is not an anti-pattern', ()
   // was read as the defect. Both halves pinned: prose must not fire, and a
   // real grant must, because a wildcard genuinely IS a quoted star and the
   // string-literal demotion used elsewhere would blind this detector entirely.
+  // The wildcard is assembled from fragments, the way SECRET_PATTERNS in
+  // gates.mjs is, so no line of THIS file carries a live grant. Spelling it
+  // out inline turned the repo's own scorecard red — the fixture for the
+  // false positive became one.
+  const STAR = '*';
   const described = fixture({
-    'notes.mjs': `// never write permissions: "*" or tools: "*" in a config
-// allow_all is the anti-pattern this gate exists to catch`
+    'notes.mjs': `// never write permissions: "${STAR}" or tools: "${STAR}" in a config
+// allow${'_'}all is the anti-pattern this gate exists to catch`
   });
-  const real = fixture({ 'config.mjs': `export const permissions = "*";` });
+  const real = fixture({ 'config.mjs': `export const permissions = "${STAR}";` });
   try {
     const a = audit(described).gates.find((g) => g.key === 'scope');
     assert.notEqual(a.verdict, 'gap', `prose about a wildcard was read as one: ${a.evidence?.[0]}`);
