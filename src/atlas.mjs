@@ -13,13 +13,33 @@
 // JSON parses natively.
 
 const ATLAS_SOURCE = 'mitre-atlas';
+const ATLAS_ID = /^AML\./;
 const EDGE_CLASSES = ['mitigation-backed', 'asserted'];
 const MIN_RATIONALE = 40;
 
-/** Pull the ATLAS id (AML.T0110, AML.M0032, AML.TA0003) off a STIX object. */
-function atlasId(obj) {
-  const ref = (obj.external_references || []).find((r) => r.source_name === ATLAS_SOURCE);
-  return ref ? ref.external_id : null;
+/**
+ * Pull the ATLAS id (AML.T0110, AML.M0032, AML.TA0003) off a STIX object.
+ *
+ * Exported and shared with scripts/atlas-gaps.mjs, which used to carry its own
+ * copy. The two had drifted: `=== 'mitre-atlas'` here, `startsWith('mitre-atlas')`
+ * there. They agree on the current release — the bundle publishes exactly one
+ * source_name, 222 references, no case variance — so nothing was ever lost.
+ * But the stricter test fails SILENTLY. buildAtlasBlock skips any object this
+ * returns null for, so the day MITRE namespaces a source, one file would keep
+ * those objects and the other would drop them with no error raised. Two
+ * definitions of the same join is the defect; the casing was only its symptom.
+ *
+ * Prefix, so a namespaced source is kept rather than dropped. Case-folded, so
+ * casing can never be the reason an id fails to join. Shape-checked, because a
+ * loose source match alone would newly admit the ATLAS Matrix object, whose
+ * mitre-atlas reference carries the literal external_id "mitre-atlas" rather
+ * than an AML id.
+ */
+export function atlasId(obj) {
+  const ref = (obj?.external_references || [])
+    .find((r) => (r?.source_name || '').toLowerCase().startsWith(ATLAS_SOURCE));
+  const id = ref ? ref.external_id : null;
+  return id && ATLAS_ID.test(id) ? id : null;
 }
 
 /**

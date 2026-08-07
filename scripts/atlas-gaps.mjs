@@ -7,6 +7,9 @@
 // in this file about what mitigates what — only about where the data
 // disagrees with itself or is structurally incomplete.
 //
+// Run from a checkout of this repository. There is nothing to install — the
+// only import outside node: builtins is src/atlas.mjs, which is in this repo.
+//
 //   node scripts/atlas-gaps.mjs --yaml ATLAS.yaml --stix stix-atlas.json
 //   node scripts/atlas-gaps.mjs --yaml ... --stix ... --json
 //
@@ -15,6 +18,8 @@
 //   https://github.com/mitre-atlas/atlas-navigator-data dist/stix-atlas.json
 
 import { readFileSync } from 'node:fs';
+
+import { atlasId } from '../src/atlas.mjs';
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i === -1 ? null : process.argv[i + 1]; };
 const JSON_OUT = process.argv.includes('--json');
@@ -112,8 +117,8 @@ function assertParsed({ techniques, mitigations }) {
 }
 
 // --------------------------------------------------------------- STIX reader
-const atlasId = (o) => (o.external_references || [])
-  .find((r) => (r.source_name || '').startsWith('mitre-atlas'))?.external_id ?? null;
+// atlasId is imported, not redefined. This file and src/atlas.mjs each had a
+// copy and they had drifted apart on how strictly they matched source_name.
 
 function readStix(bundle) {
   const objects = bundle.objects || [];

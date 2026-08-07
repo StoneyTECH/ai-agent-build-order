@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import {
+  atlasId,
   buildAtlasBlock,
   validateAtlasIds,
   validateGateEdges,
@@ -428,4 +429,63 @@ test('AC13d comparing a release to itself reports no drift', () => {
   assert.deepEqual(d.removed, []);
   assert.deepEqual(d.renamed, []);
   assert.deepEqual(d.upgradable, []);
+});
+
+// ---------------------------------------------------------- AC16
+// One matcher for the ATLAS source, and it must not drop objects silently.
+//
+// This file and scripts/atlas-gaps.mjs each carried their own atlasId, and the
+// two had drifted: strict `=== 'mitre-atlas'` here, `startsWith` there. On the
+// published bundle they agree — one source_name, 222 references, no case
+// variance — so nothing was ever lost. The danger is the failure MODE:
+// buildAtlasBlock skips whatever atlasId returns null for, with no error. A
+// namespaced source would cost techniques in one file and not the other, and
+// nothing would say so. These pin the shared behaviour.
+
+test('AC16 atlasId matches a namespaced ATLAS source rather than dropping it', () => {
+  assert.equal(
+    atlasId({ external_references: [{ source_name: 'mitre-atlas-c', external_id: 'AML.T0111' }] }),
+    'AML.T0111'
+  );
+});
+
+test('AC16 atlasId is case-insensitive on source_name', () => {
+  for (const source_name of ['MITRE-ATLAS', 'Mitre-Atlas', 'mitre-ATLAS']) {
+    assert.equal(
+      atlasId({ external_references: [{ source_name, external_id: 'AML.T0112' }] }),
+      'AML.T0112',
+      `casing must not decide the join: ${source_name}`
+    );
+  }
+});
+
+test('AC16 atlasId rejects a mitre-atlas reference whose external_id is not an AML id', () => {
+  // The real ATLAS Matrix object carries exactly this: source_name mitre-atlas,
+  // external_id "mitre-atlas". Matching the source loosely must not admit it.
+  assert.equal(
+    atlasId({ external_references: [{ source_name: 'mitre-atlas', external_id: 'mitre-atlas' }] }),
+    null
+  );
+});
+
+test('AC16 atlasId ignores other vendors and malformed objects', () => {
+  assert.equal(
+    atlasId({ external_references: [{ source_name: 'mitre-attack', external_id: 'T1059' }] }),
+    null
+  );
+  assert.equal(atlasId({}), null);
+  assert.equal(atlasId({ external_references: [{}] }), null);
+});
+
+test('AC16 a namespaced source still produces a technique in the block', () => {
+  const b = stixBundle();
+  b.objects.push({
+    type: 'attack-pattern', id: 'x9', name: 'Namespaced Source Technique',
+    external_references: [{ source_name: 'mitre-atlas-c', external_id: 'AML.T0300' }]
+  });
+  const block = buildAtlasBlock(b, RELEASE);
+  assert.ok(
+    block.techniques.some((t) => t.id === 'AML.T0300'),
+    'a strict === matcher would drop this object and raise nothing'
+  );
 });
