@@ -207,6 +207,22 @@ tables.
 - AC15 — Nothing in this crosswalk changes the OWASP Agentic mapping or gate
   verdicts. ATLAS is an additional lens, not a re-scoring.
 
+**Reading MITRE's data**
+- AC16 — There is exactly one definition of how an ATLAS id is pulled off a
+  STIX object, shared by `src/atlas.mjs` and `scripts/atlas-gaps.mjs`. It
+  matches `source_name` by case-folded prefix, so neither casing nor a
+  namespaced source can decide whether an object joins, and it returns an id
+  only when that id is shaped like an ATLAS id — the ATLAS Matrix object
+  carries a `mitre-atlas` reference whose `external_id` is the literal string
+  `mitre-atlas`.
+
+  This is a failure-mode rule, not a correctness fix. The published release has
+  one `source_name` across 222 references with no case variance, so the two
+  former definitions agreed and no id was ever lost. It matters because
+  `buildAtlasBlock` skips whatever the lookup returns null for **without
+  raising**, so a future divergence would cost techniques silently — the same
+  shape as the defect this repository reports to MITRE.
+
 ---
 
 ## Non-goals
