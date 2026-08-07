@@ -7,19 +7,20 @@
 // in this file about what mitigates what — only about where the data
 // disagrees with itself or is structurally incomplete.
 //
-// Run from a checkout of this repository. There is nothing to install — the
-// only import outside node: builtins is src/atlas.mjs, which is in this repo.
+// SELF-CONTAINED ON PURPOSE. Download this one file and run it — node: builtins
+// only, nothing to install, no checkout required. That property is the whole
+// reason anyone outside this repository can reproduce the findings, so it is a
+// requirement rather than a convenience. If you are tempted to import a helper
+// here, don't; see the note above atlasId.
 //
-//   node scripts/atlas-gaps.mjs --yaml ATLAS.yaml --stix stix-atlas.json
-//   node scripts/atlas-gaps.mjs --yaml ... --stix ... --json
+//   node atlas-gaps.mjs --yaml ATLAS.yaml --stix stix-atlas.json
+//   node atlas-gaps.mjs --yaml ... --stix ... --json
 //
 // Sources:
 //   https://github.com/mitre-atlas/atlas-data           dist/ATLAS.yaml
 //   https://github.com/mitre-atlas/atlas-navigator-data dist/stix-atlas.json
 
 import { readFileSync } from 'node:fs';
-
-import { atlasId } from '../src/atlas.mjs';
 
 const arg = (k) => { const i = process.argv.indexOf(k); return i === -1 ? null : process.argv[i + 1]; };
 const JSON_OUT = process.argv.includes('--json');
@@ -117,8 +118,27 @@ function assertParsed({ techniques, mitigations }) {
 }
 
 // --------------------------------------------------------------- STIX reader
-// atlasId is imported, not redefined. This file and src/atlas.mjs each had a
-// copy and they had drifted apart on how strictly they matched source_name.
+// A deliberate duplicate of atlasId in src/atlas.mjs, kept here so this file
+// stays runnable on its own. The two copies previously drifted — `===` there,
+// `startsWith` here — which is a real hazard, because the caller in src skips
+// whatever this returns null for and raises nothing. Importing was the obvious
+// fix and it was the wrong one: it broke standalone execution, which is the
+// property that lets anyone else reproduce the findings.
+//
+// So: copy the code, test the behaviour. test/atlas-gaps.test.mjs drives this
+// script over namespaced and mixed-case sources through the same expectations
+// AC16 pins on src/atlas.mjs. If either copy drifts, one of those fails.
+//
+// Match by case-folded prefix so neither casing nor a namespaced source decides
+// whether an object joins; return an id only when it is shaped like an ATLAS id,
+// because the ATLAS Matrix object carries a mitre-atlas reference whose
+// external_id is the literal string "mitre-atlas".
+const atlasId = (o) => {
+  const ref = (o?.external_references || [])
+    .find((r) => (r?.source_name || '').toLowerCase().startsWith('mitre-atlas'));
+  const id = ref ? ref.external_id : null;
+  return id && /^AML\./.test(id) ? id : null;
+};
 
 function readStix(bundle) {
   const objects = bundle.objects || [];
