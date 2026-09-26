@@ -96,6 +96,20 @@ use instead.
 
 [`mcp/build-order-mcp.mjs`](mcp/build-order-mcp.mjs) exposes one typed tool, `build_order_audit`, so an agent connected to it can scan its **own** working directory before acting. A GAP comes back as an error, so the agent shouldn't proceed blind. Drop the `registerTool` block into any MCP server (it's written to fold into the StoneyTECH public MCP).
 
+## In CI
+
+The repo is also a GitHub Action ([`action.yml`](action.yml)). It runs the same CLI, fails the job on any GAP, and writes the scorecard to the run's summary page:
+
+```yaml
+- uses: actions/checkout@<commit-sha>
+- uses: StoneyTECH/ai-agent-build-order@<commit-sha>
+  with:
+    target: .                   # the default
+    attest: attestation.json    # optional: receipts for what the detectors can't see
+```
+
+Pin both to a full commit SHA. A tag can be moved to different code after you've reviewed it; a SHA can't.
+
 ## Limitations — read this before you trust a green card
 
 The static detectors are **heuristics**: they find signals, not guarantees. HELD means *the evidence is in the tree*, never *this is correct*.
@@ -133,7 +147,7 @@ operator running it.
 
 ## Dogfood
 
-`.github/workflows/self-audit.yml` runs the tool inside its own CI: the unit suite, an assertion that `leaky-agent` is still caught (if it ever passes, a detector regressed), and a self-audit that emits a receipt. The auditor rides the rails it lays.
+`.github/workflows/self-audit.yml` runs the tool inside its own CI: the unit suite, an assertion that `leaky-agent` is still caught (if it ever passes, a detector regressed), and a self-audit that emits a receipt. The Action gets the same two checks as the CLI: it must block `leaky-agent` and pass this tree. The auditor rides the rails it lays.
 
 ## Releases
 

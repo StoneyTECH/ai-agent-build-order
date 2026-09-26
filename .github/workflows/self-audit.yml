@@ -33,6 +33,24 @@ jobs:
       - name: validate the ATLAS crosswalk
         run: node scripts/map-gates.mjs --verify
 
-      # 3. Dogfood: the tool runs on its own tree and emits a receipt.
+      # 4. Dogfood: the tool runs on its own tree and emits a receipt.
       - name: self-audit
         run: node bin/build-order.mjs audit . --attest attestation.json --ignore examples
+
+      # 5. The Action is what other repos run, so it gets the same two checks
+      #    as the CLI underneath it: it must block the leaky agent...
+      - name: the Action blocks the leaky agent
+        id: action-leaky
+        uses: ./
+        continue-on-error: true
+        with: { target: examples/leaky-agent }
+      - name: the Action must have failed
+        if: steps.action-leaky.outcome != 'failure'
+        run: |
+          echo "::error::the build-order Action passed examples/leaky-agent"
+          exit 1
+
+      #    ...and pass this tree.
+      - name: the Action passes this tree
+        uses: ./
+        with: { target: ., attest: attestation.json, ignore: examples }
