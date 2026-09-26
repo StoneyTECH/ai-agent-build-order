@@ -69,7 +69,27 @@ const isNamespacedValue = (v) => /[.:/]/.test(v) && segments(v).every(WORDISH);
 // managers *name* their secrets, so a *_KEY / *_TOKEN / *_SECRET label holding
 // one of these is a pointer, not a credential. That single shape accounted for
 // 46 of this detector's 50 hits on a real monorepo, none of them real.
-const hasNoSecretSizedRun = (v) => segments(v).every((s) => s.length < MIN_SECRET_RUN);
+//
+// Inside a compound, two kinds of long run are still names: a bare number (a
+// 12-digit GCP project number, an AWS account, a snowflake ID) and a lowercase
+// word short of 16 letters (`authoritative`, `configuration`). Both showed up
+// as false positives on that same monorepo once the rest were gone. Letters
+// mixed with digits or case stay entropy at any length, and so does a lowercase
+// run of 16 or more, which is where a word ends and a key begins.
+//
+// A value that is ONE long run gets no such benefit of the doubt:
+// `thisismysecretkey` is exactly what a hardcoded JWT secret looks like.
+const isSecretSizedRun = (seg, inCompound) => {
+  if (seg.length < MIN_SECRET_RUN) return false;
+  if (!inCompound) return true;
+  if (/^[0-9]+$/.test(seg)) return seg.length > 20;
+  if (/^[a-z]+$/.test(seg)) return seg.length >= 16;
+  return true;
+};
+const hasNoSecretSizedRun = (v) => {
+  const segs = segments(v);
+  return !segs.some((s) => isSecretSizedRun(s, segs.length > 1));
+};
 
 // ...but nobody stores the *name* of a password, so the rule above does not
 // apply to a password label. That is what keeps `password = "correct-horse-
@@ -139,7 +159,13 @@ export const GATES = [
       // Note this cannot use the string-literal demotion the positive
       // detectors use: a wildcard grant genuinely IS a quoted star, so
       // demoting quoted matches would blind the detector to every real one.
-      const wild = ctx.grep(/allow[_-]?all|tools?["']?\s*[:=]\s*["']?\*(?!\*)|permissions?["']?\s*[:=]\s*["']?\*(?!\*)/i, { limit: 3, skipAllowed: true })
+      //
+      // allow_all counts only when switched ON: assigned true/yes/on/1/"*", or
+      // called as allowAll(). A mention is not a grant. Code that checks it is
+      // null, false, or refused is deny-by-default, the thing this gate is
+      // looking for; matching the bare word read a real repo's destroy-gate,
+      // which rejects any rule with allow_all set, as granting everything.
+      const wild = ctx.grep(/allow[_-]?all["']?\s*(?::=|[:=])\s*["']?(?:(?:true|yes|on|1)\b|\*)|allow[_-]?all\s*\(\s*(?:true\s*)?\)|tools?["']?\s*[:=]\s*["']?\*(?!\*)|permissions?["']?\s*[:=]\s*["']?\*(?!\*)/i, { limit: 3, skipAllowed: true })
         .filter((h) => h.kind !== 'comment');
       if (wild.length) return { verdict: 'gap', mode: 'static', evidence: [`wildcard grant (no deny-by-default): ${ev(wild).join('; ')}`] };
       // AC2: a boundary lives in code or config. The README table row asking

@@ -98,6 +98,8 @@ const NOT_CREDENTIALS = [
   'OBJECT_LIST_TOKEN_SECRET="cloudflare-r2-object-list-api-token"',          // a Secret Manager NAME
   'const modelKey = "claude-opus-47-anthropic-direct-us";',                  // a model identifier
   'idempotencyKey: "{changeRequestId}:{evidenceObjectSha256}",',             // a template
+  "export const NUMBERED_SECRET = 'projects/907992690383/secrets/actsbible-content-authoring-profile';", // a resource path; GCP puts a 12-digit project number in it
+  'claimKey: "gvar-authoritative-graph-store",',                             // a long word is not entropy
 ];
 
 // ...and the ones that must never go quiet. If any of these stops flagging,
@@ -109,6 +111,12 @@ const CREDENTIALS = [
   'api_token: "aGVsbG8gd29ybGQgdGhpcyBpcyBub3QgcmVhbA=="',                     // build-order:allow (fixture) — base64
   'const credential = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NSJ9.dozjgNryP4J3jVmNHl0w5N";', // build-order:allow (fixture) — a JWT is dotted but is not a hostname
   'password = "correct-horse-battery-staple";',                                // build-order:allow (fixture) — no segment is secret-sized, but a password label holds the password
+  // The bounds of the compound exemption: words and IDs inside a compound are
+  // names, but only those. Each line below sits just outside it.
+  'const JWT_SECRET = "thisismysecretkey";',                                   // build-order:allow (fixture) — ONE long run gets no benefit of the doubt
+  'apiKey: "deploy-9f8xq2lm4rt7vz0bn5kd"',                                     // build-order:allow (fixture) — lowercase, but letters with digits is entropy
+  'sessionToken: "user-qzvxkwplmnrtbcgfhjds"',                                 // build-order:allow (fixture) — a lowercase run longer than a word
+  'const signingKey = "projects/p/secrets/9f8Xq2Lm4Rt7Vz0Bn5Kd";',             // build-order:allow (fixture) — a resource path cannot launder an opaque run
 ];
 
 test('a *_SECRET label may hold a secret NAME; a password label holds the password', () => {
@@ -163,6 +171,39 @@ test('wildcard tool grant is a scope GAP', () => {
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });
   assert.equal(verdictOf(sc, 'scope'), 'gap');
+});
+
+// A check that allow_all is OFF is deny-by-default code: the opposite of a
+// wildcard grant. The detector used to match the word wherever it appeared,
+// so a real repo's destroy-gate, which refuses any rule with allow_all set,
+// read as granting everything.
+test('code that refuses allow_all is not a wildcard grant', () => {
+  const root = fixture({
+    'src/gate.mjs': [
+      'if (!isNullish(rule.allow_all)) throw new Error("allow_all is not permitted");',
+      'const denied = { allow_all: null, allowAll: false };',
+      'const ok = dryRun && isNullish(dryRunRule.allow_all);',
+      'if (policy.allowAll === true) reject(policy);',
+    ].join('\n'),
+  });
+  const sc = audit(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.notEqual(verdictOf(sc, 'scope'), 'gap', 'a check that denies allow_all was read as granting it');
+});
+
+test('switching allow_all on is still a scope GAP', () => {
+  for (const [file, grant] of [
+    ['src/policy.mjs', 'const policy = { allow_all: true };'],      // build-order:allow (fixture)
+    ['agent/config.py', 'ALLOW_ALL = True'],                        // build-order:allow (fixture)
+    ['config.yaml', 'allow-all: yes'],                              // build-order:allow (fixture)
+    ['config.json', '{ "allowAll": "*" }'],                         // build-order:allow (fixture)
+    ['src/server.ts', 'permissions.allowAll();'],                   // build-order:allow (fixture)
+  ]) {
+    const root = fixture({ [file]: grant });
+    const sc = audit(root);
+    rmSync(root, { recursive: true, force: true });
+    assert.equal(verdictOf(sc, 'scope'), 'gap', `a real grant went undetected in ${file}: ${grant}`);
+  }
 });
 
 test('a repo with zero tests is a GAP on the fixtures gate (provable absence, not unknown)', () => {
