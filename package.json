@@ -7,7 +7,30 @@
     "build-order": "bin/build-order.mjs"
   },
   "exports": {
-    ".": "./src/audit.mjs"
+    ".": "./src/audit.mjs",
+    "./crosswalk.v1.json": "./crosswalk.v1.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "mcp/",
+    "crosswalk.v1.json"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StoneyTECH/ai-agent-build-order.git"
+  },
+  "homepage": "https://github.com/StoneyTECH/ai-agent-build-order#readme",
+  "bugs": {
+    "url": "https://github.com/StoneyTECH/ai-agent-build-order/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "test": "node --test",
