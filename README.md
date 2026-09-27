@@ -7,9 +7,11 @@
 This is the proof-of-work companion to the essay [*Everything Gets Rebuilt*](https://stoneytech.net/learn/2026-07-18-everything-gets-rebuilt). The essay ends with nine steps, in the order the rails get laid. This repo turns those steps into a check an agent can run against its own build before it is granted authority. The essay is the demo; this is the receipt.
 
 ```
-npx build-order audit ./my-agent     # the nine-gate scorecard
-npx build-order atlas                # MITRE ATLAS crosswalk coverage
+npx github:StoneyTECH/ai-agent-build-order audit ./my-agent   # the nine-gate scorecard
+npx github:StoneyTECH/ai-agent-build-order atlas              # MITRE ATLAS crosswalk coverage
 ```
+
+These run straight from this repository. build-order isn't published to npm, and these commands never look it up there, so nobody else can put their code behind them. To read the code before running it, clone the repo and run `node bin/build-order.mjs audit ./my-agent` instead.
 
 ## The nine gates
 
@@ -149,15 +151,17 @@ operator running it.
 
 `.github/workflows/self-audit.yml` runs the tool inside its own CI: the unit suite, an assertion that `leaky-agent` is still caught (if it ever passes, a detector regressed), and a self-audit that emits a receipt. The Action gets the same two checks as the CLI: it must block `leaky-agent` and pass this tree. The auditor rides the rails it lays.
 
-## Releases
+## Versions
 
-Releases are published from GitHub Actions, never from a laptop ([`publish.yml`](.github/workflows/publish.yml)). Through npm trusted publishing, no npm token exists to leak, and each release carries a provenance attestation tying the tarball to the commit and workflow run that built it. Check it after installing:
+build-order isn't published to npm; it runs from this repository. To pin a version, add a commit SHA after `#`:
 
 ```
-npm audit signatures
+npx github:StoneyTECH/ai-agent-build-order#<commit-sha> audit ./my-agent
 ```
 
-The tarball ships an allowlist: the CLI, the engine, the MCP server, and the crosswalk. [`test/package.test.mjs`](test/package.test.mjs) fails the build if anything else gets in, or if the packed CLI answers differently from the tested source.
+In CI, pin the Action the same way.
+
+The npx route installs an allowlist, not the whole repository: the CLI, the engine, the MCP server, and the crosswalk. [`test/package.test.mjs`](test/package.test.mjs) fails the build if anything else gets in, or if the packed CLI answers differently from the tested source.
 
 ## License
 

@@ -1,7 +1,8 @@
-// The tarball is the product. `npx build-order` runs whatever the published
-// package holds, so the package is held to the tool's own rules: ship an
-// allowlist, not "everything nobody remembered to ignore" (gate 3, deny by
-// default), and make that a test rather than a habit (gate 7).
+// The tarball is the product. `npx github:StoneyTECH/ai-agent-build-order`
+// packs this repository and runs whatever that package holds, so the package
+// is held to the tool's own rules: ship an allowlist, not "everything nobody
+// remembered to ignore" (gate 3, deny by default), and make that a test rather
+// than a habit (gate 7).
 //
 // Before `files` existed, `npm pack` here shipped 29 files: the test suite, the
 // leaky-agent fixture with its fake key, and an untracked
