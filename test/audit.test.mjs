@@ -100,6 +100,9 @@ const NOT_CREDENTIALS = [
   'idempotencyKey: "{changeRequestId}:{evidenceObjectSha256}",',             // a template
   "export const NUMBERED_SECRET = 'projects/907992690383/secrets/actsbible-content-authoring-profile';", // a resource path; GCP puts a 12-digit project number in it
   'claimKey: "gvar-authoritative-graph-store",',                             // a long word is not entropy
+  "const PKCE_VERIFIER_KEY = 'appPkceCodeVerifier';",                        // camelCase words: the NAME a verifier is stored under
+  "const ID_TOKEN_KEY = 'consoleIdToken';",                                  // ditto, passed to localStorage.setItem
+  'const CACHE_KEY = "UserPreferences";',                                    // PascalCase words
 ];
 
 // ...and the ones that must never go quiet. If any of these stops flagging,
@@ -117,6 +120,11 @@ const CREDENTIALS = [
   'apiKey: "deploy-9f8xq2lm4rt7vz0bn5kd"',                                     // build-order:allow (fixture) — lowercase, but letters with digits is entropy
   'sessionToken: "user-qzvxkwplmnrtbcgfhjds"',                                 // build-order:allow (fixture) — a lowercase run longer than a word
   'const signingKey = "projects/p/secrets/9f8Xq2Lm4Rt7Vz0Bn5Kd";',             // build-order:allow (fixture) — a resource path cannot launder an opaque run
+  // Case changes separate words only when every part IS a word. Random
+  // mixed-case letters, with or without digits, stay an opaque run.
+  'apiKey: "aBcDeFgHiJkLmNoPqRsT"',                                            // build-order:allow (fixture) — alternating case is not words
+  'const token = "QmVyYXplbGlmZXNhdmVy";',                                     // build-order:allow (fixture) — letters-only base64
+  'password = "correctHorseBatteryStaple";',                                   // build-order:allow (fixture) — a camelCase passphrase under a password label
 ];
 
 test('a *_SECRET label may hold a secret NAME; a password label holds the password', () => {
@@ -211,6 +219,31 @@ test('a repo with zero tests is a GAP on the fixtures gate (provable absence, no
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });
   assert.equal(verdictOf(sc, 'fixtures'), 'gap');
+});
+
+// A gap on gate 8 claims PROVABLE absence, so every mainstream test layout has
+// to count. pytest discovers test_*.py anywhere, Go keeps *_test.go beside the
+// code, Jest reads __tests__/, RSpec reads spec/. Missing the first made the
+// tool assert "no tests" about a real repo with eight pytest tests in it.
+test("each ecosystem's own test naming counts as a fixture", () => {
+  for (const [file, body] of [
+    ['tools/test_parser.py', 'def test_roundtrip():\n    assert True\n'],
+    ['pkg/parse/parse_test.go', 'package parse\n'],
+    ['src/__tests__/app.js', 'it("renders", () => {});\n'],
+    ['spec/models/user_spec.rb', 'describe User do; end\n'],
+  ]) {
+    const root = fixture({ [file]: body, 'src/app.js': 'export const x = 1;' });
+    const sc = audit(root);
+    rmSync(root, { recursive: true, force: true });
+    assert.equal(verdictOf(sc, 'fixtures'), 'held', `${file} was not recognized as a test`);
+  }
+});
+
+test('a name that merely contains "test" is not a fixture', () => {
+  const root = fixture({ 'src/attest.py': 'x = 1', 'src/contest_rules.py': 'y = 2', 'src/latest.go': 'package src' });
+  const sc = audit(root);
+  rmSync(root, { recursive: true, force: true });
+  assert.equal(verdictOf(sc, 'fixtures'), 'gap', 'attest.py, contest_rules.py and latest.go are not tests');
 });
 
 test('an empty repo never crashes and inflates nothing', () => {

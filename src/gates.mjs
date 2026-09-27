@@ -83,12 +83,23 @@ const isSecretSizedRun = (seg, inCompound) => {
   if (seg.length < MIN_SECRET_RUN) return false;
   if (!inCompound) return true;
   if (/^[0-9]+$/.test(seg)) return seg.length > 20;
-  if (/^[a-z]+$/.test(seg)) return seg.length >= 16;
+  if (/^[A-Z]?[a-z]+$/.test(seg)) return seg.length >= 16;
   return true;
 };
+
+// A camelCase or PascalCase name is a compound of words, the same as a
+// hyphenated one: `appPkceCodeVerifier` is the key a PKCE verifier is stored
+// under, not the verifier. A real repo passed three such names straight to
+// sessionStorage.setItem and failed this gate for it. A case change separates
+// words only when every part is a letters-only word, which random mixed-case
+// secrets essentially never are: `aBcDeF…` opens with a one-letter part, and
+// base62 almost always carries digits.
+const CASED_WORDS = /^(?:[a-z]{2,}|[A-Z][a-z]{2,})(?:[A-Z][a-z]+)+$/;
+const words = (v) => segments(v).flatMap((s) => (CASED_WORDS.test(s) ? s.split(/(?=[A-Z])/) : [s]));
+
 const hasNoSecretSizedRun = (v) => {
-  const segs = segments(v);
-  return !segs.some((s) => isSecretSizedRun(s, segs.length > 1));
+  const parts = words(v);
+  return !parts.some((s) => isSecretSizedRun(s, parts.length > 1));
 };
 
 // ...but nobody stores the *name* of a password, so the rule above does not
@@ -235,7 +246,11 @@ export const GATES = [
     title: 'Turn failures into fixtures',
     essayLine: 'When a run fails, turn the failure into a fixture: a regression case, a graph edge, a tighter template that every future run walks through.',
     detect(ctx) {
-      const testFiles = ctx.paths(/(^|\/)tests?\/|\.(test|spec)\.[mc]?[jt]sx?$|(^|\/)eval|_test\.py$|mitre_probe|regression/i);
+      // A gap here claims PROVABLE absence, so each ecosystem's own layout has
+      // to count: pytest's test_*.py (its default, found anywhere), Go's
+      // *_test.go, Jest's __tests__/, RSpec's spec/. Missing test_*.py once
+      // had this gate report "no tests" for a repo with eight of them.
+      const testFiles = ctx.paths(/(^|\/)(tests?|__tests__|spec)\/|\.(test|spec)\.[mc]?[jt]sx?$|(^|\/)test_[^/]*\.py$|_test\.(py|go)$|_spec\.rb$|(^|\/)eval|mitre_probe|regression/i);
       const ci = ctx.hasPath(/\.github\/workflows\/|\.gitlab-ci|circleci|Jenkinsfile/i);
       if (testFiles.length) {
         const note = [`${testFiles.length} test/eval file(s): ${testFiles.slice(0, 4).join(', ')}${testFiles.length > 4 ? ' …' : ''}`];
