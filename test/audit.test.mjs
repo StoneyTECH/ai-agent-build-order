@@ -87,19 +87,21 @@ test('the ALLOW_MARKER escape hatch suppresses a reviewed false positive', () =>
 // codebase is full of them. Flagging the label was this detector's worst
 // false-positive source, and the reason auditing a whole monorepo was useless.
 
-// Every line here is a real false positive from auditing a real repo.
+// Each line has the shape of a real false positive found auditing real
+// repositories. The values are synthetic stand-ins: this repo never carries
+// another repo's audit output (see SECURITY.md).
 const NOT_CREDENTIALS = [
-  'const job = { idempotencyKey: "idempotency:chatops-human-join" };',       // colon-namespaced id
+  'const job = { idempotencyKey: "idempotency:orders-human-approval" };',       // colon-namespaced id
   'const cfg = { secret: "secretmanager.googleapis.com" };',                 // a hostname
-  '      - --secret="${_CLOUDFLARE_TOKEN_SECRET_ID}"',                       // a Cloud Build substitution
+  '      - --secret="${_API_TOKEN_SECRET_ID}"',                       // a Cloud Build substitution
   'const apiKey = "${fakeApiKey}";',                                         // a template interpolation
   'const vaultSecret = "/run/secrets/app.json";',                            // a path
   'const secret = "https://secretmanager.googleapis.com/v1/projects/p/s";',  // a locator
-  'OBJECT_LIST_TOKEN_SECRET="cloudflare-r2-object-list-api-token"',          // a Secret Manager NAME
-  'const modelKey = "claude-opus-47-anthropic-direct-us";',                  // a model identifier
+  'OBJECT_LIST_TOKEN_SECRET="object-store-list-api-token"',          // a Secret Manager NAME
+  'const modelKey = "large-model-47-provider-direct-us";',                  // a model identifier
   'idempotencyKey: "{changeRequestId}:{evidenceObjectSha256}",',             // a template
-  "export const NUMBERED_SECRET = 'projects/907992690383/secrets/actsbible-content-authoring-profile';", // a resource path; GCP puts a 12-digit project number in it
-  'claimKey: "gvar-authoritative-graph-store",',                             // a long word is not entropy
+  "export const NUMBERED_SECRET = 'projects/123456789012/secrets/app-content-authoring-profile';", // a resource path; GCP puts a 12-digit project number in it
+  'claimKey: "ledger-authoritative-graph-store",',                             // a long word is not entropy
   "const PKCE_VERIFIER_KEY = 'appPkceCodeVerifier';",                        // camelCase words: the NAME a verifier is stored under
   "const ID_TOKEN_KEY = 'consoleIdToken';",                                  // ditto, passed to localStorage.setItem
   'const CACHE_KEY = "UserPreferences";',                                    // PascalCase words
@@ -131,9 +133,9 @@ test('a *_SECRET label may hold a secret NAME; a password label holds the passwo
   // Secret managers name their secrets, so `*_KEY`/`*_TOKEN`/`*_SECRET` routinely
   // point at a resource instead of holding one — 46 lines of one real repo were
   // exactly this, and they were the whole reason `--target .` was unusable.
-  assert.equal(looksLikeHardcodedSecret('SIGNING_KEY_SECRET = "standards-led-evidence-signing";'), false);
+  assert.equal(looksLikeHardcodedSecret('SIGNING_KEY_SECRET = "release-evidence-signing";'), false);
   // Nobody stores the *name* of a password. Same value, different claim.
-  assert.equal(looksLikeHardcodedSecret('password = "standards-led-evidence-signing";'), true); // build-order:allow (fixture)
+  assert.equal(looksLikeHardcodedSecret('password = "release-evidence-signing";'), true); // build-order:allow (fixture)
 });
 
 test('a labelled value that is a reference or an identifier is NOT a credential', () => {
@@ -156,7 +158,7 @@ test('a benign labelled value cannot hide a real key later on the same line', ()
 test('a mature repo full of *Key/*Secret labels is not a false GAP', () => {
   const root = fixture({
     'src/queue.ts': NOT_CREDENTIALS.join('\n'),
-    'cloudbuild.yaml': 'steps:\n  - args: [ "--secret=${_CLOUDFLARE_TOKEN_SECRET_ID}" ]\n',
+    'cloudbuild.yaml': 'steps:\n  - args: [ "--secret=${_API_TOKEN_SECRET_ID}" ]\n',
   });
   const sc = audit(root);
   rmSync(root, { recursive: true, force: true });

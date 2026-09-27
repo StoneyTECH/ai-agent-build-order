@@ -64,8 +64,8 @@ const segments = (v) => v.split(/[._:/\\-]+/).filter(Boolean);
 const isNamespacedValue = (v) => /[.:/]/.test(v) && segments(v).every(WORDISH);
 
 // Nothing in it is secret-sized. A string whose every segment falls under the
-// floor is a compound of short tokens — `gpt-55-openai-us`,
-// `cloudflare-r2-read-access-key-id`, `standards-led-evidence-signing`. Secret
+// floor is a compound of short tokens — `large-model-us-east`,
+// `object-store-read-access-key-id`, `release-evidence-signing`. Secret
 // managers *name* their secrets, so a *_KEY / *_TOKEN / *_SECRET label holding
 // one of these is a pointer, not a credential. That single shape accounted for
 // 46 of this detector's 50 hits on a real monorepo, none of them real.
@@ -104,7 +104,7 @@ const hasNoSecretSizedRun = (v) => {
 
 // ...but nobody stores the *name* of a password, so the rule above does not
 // apply to a password label. That is what keeps `password = "correct-horse-
-// battery-staple"` a gap while `SIGNING_KEY_SECRET = "standards-led-evidence-
+// battery-staple"` a gap while `SIGNING_KEY_SECRET = "release-evidence-
 // signing"` goes quiet — same shape, different claim about what it holds.
 const NAMEABLE_LABEL = /key|token|secret|credential/i;
 

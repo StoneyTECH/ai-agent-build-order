@@ -76,7 +76,7 @@ test('the packed CLI gives the same answers as the tested source', () => {
 });
 
 test('a consumer can import the engine and locate the crosswalk and manifest', () => {
-  // What the StoneyTech-Compliance gate needs once it depends on the package
+  // What a consuming gate needs once it depends on the package
   // instead of a vendored copy: the engine, the crosswalk it maps gates
   // through, and the installed version for its provenance line.
   const probe = `
